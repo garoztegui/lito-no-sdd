@@ -1,0 +1,38 @@
+:root { color-scheme: dark; --fondo: #11110f; --panel: #20201c; --texto: #f7f6ef; --acento: #f5d34b; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font-family: Arial, sans-serif; line-height: 1.5; }
+.container { width: min(100% - 2rem, 70rem); margin: auto; padding: 3rem 0; }
+header { max-width: 38rem; margin-bottom: 2rem; }
+.marca { color: var(--acento); font-size: .85rem; font-weight: 700; letter-spacing: .12em; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.1; }
+header p:last-child { color: #d5d4ca; }
+.formularios { display: grid; gap: 1rem; }
+form { display: grid; gap: 1rem; align-content: start; padding: 1.5rem; background: var(--panel); border: 1px solid #55554a; border-radius: .75rem; }
+h2 { margin: 0 0 .25rem; font-size: 1.4rem; }
+label { display: grid; gap: .35rem; font-weight: 600; }
+input, select, button { width: 100%; min-height: 2.75rem; border-radius: .4rem; font: inherit; }
+input, select { min-width: 0; padding: .6rem .75rem; border: 1px solid #a6a69a; background: #11110f; color: var(--texto); }
+button { padding: .6rem 1rem; border: 0; background: var(--acento); color: #16140a; font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .7; cursor: wait; }
+:focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+form p { margin: 0; }
+form p:empty { display: none; }
+@media (min-width: 48rem) { .formularios { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.agenda { max-width: 48rem; margin-top: 2rem; }
+.cuenta { max-width: 28rem; }
+.cuenta p { overflow-wrap: anywhere; }
+.cuenta button { width: auto; min-width: 10rem; }
+.agenda > p { color: #d5d4ca; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { margin-bottom: .75rem; font-weight: 600; }
+.horarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr)); gap: .5rem; }
+.horario { background: #303029; color: var(--texto); border: 1px solid #a6a69a; font-size: .9rem; }
+.horario[aria-pressed="true"] { background: var(--acento); color: #16140a; }
+.horario:disabled { opacity: .65; cursor: not-allowed; }
+.agenda button[type="submit"]:disabled:not([aria-busy="true"]) { cursor: not-allowed; }
+.mis-citas { max-width: 48rem; margin-top: 2rem; }
+.mis-citas ul { display: grid; gap: .75rem; list-style: none; margin: 1rem 0 0; padding: 0; }
+.mis-citas li { background: var(--panel); border: 1px solid #55554a; border-radius: .75rem; padding: 1rem 1.5rem; }
+.mis-citas li h3 { margin: 0; font-size: 1.1rem; }
+.mis-citas li p { margin: .4rem 0 0; }
+.mis-citas button { width: auto; min-width: 10rem; }
