@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Agenda from './agenda';
 import MisCitas from './mis-citas';
+import EnlaceAgendaAdmin from './enlace-agenda-admin';
 
 function BotonRegistro({ pending }: { pending: boolean }) {
   return <button type="submit" disabled={pending}>{pending ? 'Registrando...' : 'Registrarse'}</button>;
@@ -120,7 +121,7 @@ export default function Home() {
     <main className="container">
       <header><p className="marca">LITO RESERVAS</p><h1>Tu bienestar comienza acá</h1><p>{ingresado ? 'Elegí el momento para tu próxima sesión.' : 'Creá tu cuenta o ingresá para acceder a LITO.'}</p></header>
       {errorCierre && <p role="alert">{errorCierre}</p>}
-      {ingresado ? <><section className="cuenta"><h2>Mi cuenta</h2><p>Sesión iniciada como:</p><p>{emailUsuario}</p><button type="button" onClick={cerrarSesion} disabled={cerrando}>{cerrando ? 'Cerrando sesión...' : 'Cerrar sesión'}</button></section><MisCitas version={versionCitas} /><Agenda onSolicitudFinalizada={() => setVersionCitas(valor => valor + 1)} /></> : <div className="formularios">
+      {ingresado ? <><section className="cuenta"><h2>Mi cuenta</h2><p>Sesión iniciada como:</p><p>{emailUsuario}</p><button type="button" onClick={cerrarSesion} disabled={cerrando}>{cerrando ? 'Cerrando sesión...' : 'Cerrar sesión'}</button><EnlaceAgendaAdmin /></section><MisCitas version={versionCitas} /><Agenda onSolicitudFinalizada={() => setVersionCitas(valor => valor + 1)} /></> : <div className="formularios">
       <form aria-label="Registro" onSubmit={registrar}>
         <h2>Crear cuenta</h2>
         <label>Nombre completo<input name="nombre" aria-describedby={mensaje === 'Ingresá tu nombre completo.' ? 'error-nombre' : undefined} /></label>

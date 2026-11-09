@@ -1,0 +1,12 @@
+Problemas y correcciones durante la historia 4
+
+- Gentle AI: el AGENTS.md global asignaba al explorador el modelo gpt-6.1-luna, que no estaba disponible en la sesión. La delegación falló y detuvo la implementación. Se cambió la asignación a gpt-6-luna y el explorador pudo iniciarse.
+- Gentle AI: gentle-ai.exe está instalado en C:/Users/gaston/go/bin, pero esa carpeta no figura en el PATH de esta sesión. Se ejecutó usando la ruta completa (versión 4.4.0). La revisión de Story 4 pidió seleccionar los archivos nuevos, recibió autorización, completó los lentes de riesgo, legibilidad y confiabilidad sin hallazgos, y quedó aprobada y reconocida.
+- Engram: al aprobar y guardar la historia 4, no se registró inicialmente la decisión en memoria. Después se guardaron la implementación y la configuración de la agenda.
+- Migraciones: la migración de la agenda se ejecutó directamente en la base local sin registrarla en el historial. Luego se reparó el historial. Al aplicarla en producción, Supabase generó otra versión; se renombró el archivo y se reconcilió el historial local con la versión 20261109024358.
+- Administración: no existía una bandera de administrador y las citas solo admitían el estado pendiente. La migración agregó la bandera y permitió el estado confirmada; se configuró la cuenta indicada como administradora en local y producción.
+- Pruebas: PowerShell bloqueó npx.ps1; se utilizó npx.cmd. Playwright rechazó --project=chromium porque el proyecto no tiene un proyecto con ese nombre; la prueba pasó al ejecutarla sin ese argumento.
+- Supabase: el asesor de seguridad de producción informó que la protección contra contraseñas filtradas está desactivada. No se modificó esa configuración.
+
+
+codex --sandbox danger-full-access --ask-for-approval never
