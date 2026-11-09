@@ -1,13 +1,23 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { aceptarSolicitud, rechazarSolicitud } from './actions';
 
 const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', dateStyle: 'long', timeStyle: 'short', hourCycle: 'h23',
 });
 
-type Cita = { inicio: string; servicio: string; estado: string; nombre: string; email: string; telefono: string; sexo: string };
+type Cita = { id: string; inicio: string; servicio: string; estado: string; nombre: string; email: string; telefono: string; sexo: string };
 
-export default async function AgendaAdmin() {
+const mensajes: Record<string, string> = {
+  aceptada: 'Solicitud aceptada. La cita quedó confirmada.',
+  rechazada: 'Solicitud rechazada. El horario vuelve a estar disponible.',
+  cancelada: 'La solicitud venció y se canceló. El horario quedó disponible.',
+  ya_resuelta: 'La solicitud ya no está pendiente. Actualizá la agenda.',
+  error: 'No se pudo actualizar la solicitud. Intentá nuevamente.',
+};
+
+export default async function AgendaAdmin({ searchParams }: { searchParams: Promise<{ resultado?: string }> }) {
+  const parametros = await searchParams;
   const almacenamiento = await cookies();
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
     cookies: { getAll: () => almacenamiento.getAll(), setAll: () => {} },
@@ -29,11 +39,16 @@ export default async function AgendaAdmin() {
     if ((resultado.data ?? []).length < porPagina) break;
   }
   return <main className="container"><h1>Agenda administrativa</h1><a href="/">Volver al inicio</a>
+    {parametros.resultado && mensajes[parametros.resultado] && <p role="status">{mensajes[parametros.resultado]}</p>}
     <section className="mis-citas" aria-label="Citas futuras">
       {error ? <><p role="alert">No se pudo cargar la agenda. Intentá nuevamente.</p><a href="/agenda-admin">Reintentar</a></> :
         citas.length === 0 ? <p>No hay citas futuras.</p> : <ul>{citas.map(cita => <li key={`${cita.inicio}-${cita.email}`}>
           <h2>{cita.servicio}</h2><p><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time> (Montevideo)</p>
           <p>Estado: {cita.estado}</p><p>Nombre completo: {cita.nombre}</p><p>Email: {cita.email}</p><p>Teléfono: {cita.telefono}</p><p>Sexo: {cita.sexo}</p>
+          {cita.estado === 'pendiente' && <div className="acciones-cita">
+            <form action={aceptarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><button type="submit">Aceptar solicitud</button></form>
+            <form action={rechazarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><button type="submit">Rechazar solicitud</button></form>
+          </div>}
         </li>)}</ul>}
     </section>
   </main>;

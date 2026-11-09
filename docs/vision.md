@@ -14,6 +14,8 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 - Las opciones de sexo son hombre, mujer y prefiero no especificar.
 - Una solicitud pendiente ocupa el horario. Otros clientes lo ven ocupado, sin
   conocer los datos de quien reservó.
+- Una solicitud que siga pendiente se cancela automáticamente al alcanzar las
+  24 horas previas a su inicio y libera el horario.
 - Los administradores pueden aceptar, rechazar o proponer otro horario.
 - Al proponer otro horario se libera el original y se ocupa el propuesto. El
   cliente recibe un email y puede aceptar o rechazar, sin contrapropuestas. Si
@@ -58,6 +60,5 @@ adecuación aún deben evaluarse; no son decisiones verificadas.
 
 ## Decisiones pendientes
 
-- Las reglas de vencimiento de reservas, si las hay.
 - Las notificaciones adicionales al email de propuesta de horario, si las hay.
 - Los detalles de implementación y la validación de las tecnologías propuestas.
