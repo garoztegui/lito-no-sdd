@@ -30,3 +30,78 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
     sql(`update public.perfiles set es_administrador = false where id = (select id from auth.users where email = '${email}')`);
   }
 });
+
+test('el administrador puede proponer otro horario para una solicitud pendiente', async ({ page }) => {
+  const email = `story6-${crypto.randomUUID()}@example.com`;
+  await page.goto('/');
+  const registro = page.getByRole('form', { name: 'Registro' });
+  await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
+  await registro.getByLabel('Email').fill(email);
+  await registro.getByLabel('Teléfono').fill('099123456');
+  await registro.getByLabel('Contraseña').fill('ClaveSegura123');
+  await registro.getByRole('button', { name: 'Registrarse' }).click();
+  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+
+  const sql = (statement: string) => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-t', '-A', '-c', statement], { encoding: 'utf8' });
+  const inicio = new Date(Date.now() + 45 * 86400000);
+  while (inicio.getUTCDay() === 0 || inicio.getUTCDay() === 6) inicio.setUTCDate(inicio.getUTCDate() + 1);
+  inicio.setUTCHours(13, 0, 0, 0);
+  let originalDisponible = false;
+  for (let intento = 0; intento < 25; intento++) {
+    const existe = sql(`select exists (select 1 from public.citas where inicio = '${inicio.toISOString()}' and estado in ('pendiente', 'confirmada', 'propuesta'))`).trim();
+    if (existe === 'f') { originalDisponible = true; break; }
+    inicio.setUTCDate(inicio.getUTCDate() + 1);
+    while (inicio.getUTCDay() === 0 || inicio.getUTCDay() === 6) inicio.setUTCDate(inicio.getUTCDate() + 1);
+  }
+  expect(originalDisponible).toBe(true);
+  const propuesta = new Date(inicio);
+  propuesta.setUTCDate(propuesta.getUTCDate() + 1);
+  while (propuesta.getUTCDay() === 0 || propuesta.getUTCDay() === 6) propuesta.setUTCDate(propuesta.getUTCDate() + 1);
+  let fechaPropuesta = '';
+  let disponible = false;
+  for (let intento = 0; intento < 25; intento++) {
+    fechaPropuesta = propuesta.toISOString();
+    const ocupado = sql(`select exists (select 1 from public.citas where inicio = '${fechaPropuesta}' and estado in ('pendiente', 'confirmada', 'propuesta'))`).trim();
+    if (ocupado === 'f') { disponible = true; break; }
+    propuesta.setUTCDate(propuesta.getUTCDate() + 1);
+    while (propuesta.getUTCDay() === 0 || propuesta.getUTCDay() === 6) propuesta.setUTCDate(propuesta.getUTCDate() + 1);
+  }
+  expect(disponible).toBe(true);
+  const ocupado = new Date(propuesta);
+  ocupado.setUTCDate(ocupado.getUTCDate() + 1);
+  while (ocupado.getUTCDay() === 0 || ocupado.getUTCDay() === 6) ocupado.setUTCDate(ocupado.getUTCDate() + 1);
+  let horarioOcupado = '';
+  let ocupadoDisponible = false;
+  for (let intento = 0; intento < 25; intento++) {
+    horarioOcupado = ocupado.toISOString();
+    const existe = sql(`select exists (select 1 from public.citas where inicio = '${horarioOcupado}' and estado in ('pendiente', 'confirmada', 'propuesta'))`).trim();
+    if (existe === 'f') { ocupadoDisponible = true; break; }
+    ocupado.setUTCDate(ocupado.getUTCDate() + 1);
+    while (ocupado.getUTCDay() === 0 || ocupado.getUTCDay() === 6) ocupado.setUTCDate(ocupado.getUTCDate() + 1);
+  }
+  expect(ocupadoDisponible).toBe(true);
+  sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${email}')`);
+  sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, '${inicio.toISOString()}', 'Espalda', 'pendiente' from auth.users where email = '${email}'`);
+  sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, '${horarioOcupado}', 'Cuerpo entero', 'confirmada' from auth.users where email = '${email}'`);
+
+  try {
+    await page.goto('/agenda-admin');
+    const cita = page.getByRole('listitem').filter({ hasText: email }).filter({ hasText: 'Estado: pendiente' });
+    const nuevoHorario = cita.getByLabel('Nuevo horario (Montevideo)');
+    await nuevoHorario.fill(`${horarioOcupado.slice(0, 10)}T10:00`);
+    await cita.getByRole('button', { name: 'Proponer otro horario' }).click();
+    await expect(cita.getByRole('alert')).toHaveText('El horario elegido no está disponible. Elegí otro.');
+    await expect(nuevoHorario).toHaveValue(`${horarioOcupado.slice(0, 10)}T10:00`);
+
+    await nuevoHorario.fill(`${fechaPropuesta.slice(0, 10)}T10:00`);
+    await cita.getByRole('button', { name: 'Proponer otro horario' }).click();
+    await expect(page.getByRole('status')).toHaveText('Propuesta de horario registrada.');
+    const citaPropuesta = page.getByRole('listitem').filter({ hasText: email }).filter({ hasText: 'Estado: propuesta' });
+    await expect(citaPropuesta).toContainText('propuesta');
+    const inicioMostrado = await citaPropuesta.locator('time').getAttribute('datetime');
+    expect(Date.parse(inicioMostrado ?? '')).toBe(Date.parse(fechaPropuesta));
+  } finally {
+    sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
+    sql(`update public.perfiles set es_administrador = false where id = (select id from auth.users where email = '${email}')`);
+  }
+});
