@@ -14,25 +14,42 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 - Las opciones de sexo son hombre, mujer y prefiero no especificar.
 - Una solicitud pendiente ocupa el horario. Otros clientes lo ven ocupado, sin
   conocer los datos de quien reservó.
-- Una solicitud que siga pendiente se cancela automáticamente al alcanzar las
-  24 horas previas a su inicio y libera el horario.
+- Una solicitud pendiente de aprobación del administrador o una propuesta de
+  horario pendiente de respuesta del cliente se cancela automáticamente al
+  alcanzar las 24 horas previas a su inicio y libera el horario.
 - Los administradores pueden aceptar, rechazar o proponer otro horario.
 - Al proponer otro horario se libera el original y se ocupa el propuesto. El
-  cliente recibe un email y puede aceptar o rechazar, sin contrapropuestas. Si
-  acepta, la cita queda confirmada; si rechaza, se cancela.
+  cliente recibe un email y, tras iniciar sesión, puede aceptar o rechazar la
+  propuesta antes de su vencimiento, sin contrapropuestas. Si acepta, la cita
+  queda confirmada; si rechaza, se cancela.
 - Los clientes solo pueden acceder a sus propios datos y citas.
 - Una cita no puede cancelarse dentro de las 24 horas anteriores a su inicio.
-  Como excepción, el cliente puede rechazar una propuesta de horario incluso
-  dentro de ese plazo; al hacerlo, la cita se cancela.
+- El administrador puede cancelar una cita confirmada antes de ese plazo
+  indicando el motivo, que se envía por email al cliente. No puede proponer
+  otro horario para una cita confirmada.
+- Mientras una propuesta de horario espera la respuesta del cliente, el
+  administrador no puede realizar acciones sobre esa cita.
 
 ### Agenda y servicios
 
 - Los administradores configuran una disponibilidad semanal habitual y pueden
-  bloquear horarios o días específicos. Los bloqueos no pueden superponerse con
-  citas que ya ocupan disponibilidad.
+  bloquear horarios o días específicos. Si una reducción de disponibilidad o un
+  bloqueo afecta citas, se informa al administrador y se le pregunta si desea
+  cancelar todas las citas afectadas para realizar el cambio. Si alguna está
+  dentro de las próximas 24 horas, se informa que no se puede realizar la
+  operación y no se modifica la disponibilidad ni se cancelan citas.
+- Los bloqueos corresponden a fechas y horarios específicos, independientes de
+  la disponibilidad semanal. El administrador puede verlos y eliminar los que
+  aún no hayan pasado.
 - Los servicios iniciales son masaje deportivo, cuerpo entero y espalda. Los
   administradores pueden administrar el catálogo.
-- Un servicio no puede retirarse del catálogo si tiene reservas futuras.
+- Los servicios tienen un nombre único. El administrador puede crearlos y
+  cambiar su nombre; al renombrar uno se actualiza el nombre en sus citas futuras.
+- Un administrador puede bloquear un servicio para impedir nuevas reservas sin
+  modificar las citas existentes. También puede borrarlo si no tiene citas
+  futuras pendientes, con propuesta o confirmadas; si las tiene, se le informa
+  y se le recomienda bloquearlo. Las citas pasadas conservan el nombre del
+  servicio borrado.
 - Inicialmente todas las sesiones duran 60 minutos y se permiten turnos
   consecutivos.
 - Mientras no se configure la disponibilidad, se ofrecen turnos de lunes a
@@ -47,6 +64,9 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 
 - Los administradores pueden consultar clientes, los datos personales necesarios,
   el historial de citas y la agenda futura.
+- El historial de cada cliente incluye todas sus solicitudes y citas, pasadas y
+  futuras, cualquiera sea su estado. Desde allí el administrador puede gestionar
+  citas futuras según las reglas correspondientes a cada estado.
 - Habrá un único administrador. Por ahora no habrá gestión de accesos
   administrativos: su bandera de administrador se configurará manualmente en
   la base de datos.

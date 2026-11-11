@@ -11,6 +11,7 @@
 9. Como administrador, quiero configurar la disponibilidad semanal habitual, para definir cuándo se pueden solicitar citas.
 10. Como administrador, quiero bloquear horarios o días específicos, para impedir nuevas solicitudes en esos períodos.
 11. Como administrador, quiero administrar el catálogo de servicios, para mantener actualizadas las opciones disponibles.
-12. Como administrador, quiero retirar un servicio cuando no tenga reservas futuras, para mantener actualizado el catálogo.
+12. Como administrador, quiero bloquear o borrar un servicio, para controlar las opciones disponibles y mantener actualizado el catálogo.
 13. Como administrador, quiero consultar los datos de los clientes y su historial de citas, para gestionar sus reservas.
 14. Como cliente, quiero cerrar sesión, para salir de mi cuenta en el dispositivo que estoy usando. Requiere: #1.
+15. Como administrador, quiero gestionar las citas futuras desde el historial de un cliente, para atender cambios y cancelaciones. Requiere: #6 y #13.
