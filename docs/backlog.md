@@ -15,4 +15,7 @@
 13. Como administrador, quiero consultar los datos de los clientes y su historial de citas, para gestionar sus reservas.
 14. Como cliente, quiero cerrar sesión, para salir de mi cuenta en el dispositivo que estoy usando. Requiere: #1.
 15. Como administrador, quiero gestionar las citas futuras desde el historial de un cliente, para atender cambios y cancelaciones. Requiere: #6 y #13.
-16. Como cliente, quiero recibir emails sobre acciones relacionadas con mis citas, incluidas las propuestas de horario, para enterarme de los cambios importantes.
+16. Como cliente, quiero recibir un email de bienvenida formal, divertido y con emojis al crear mi cuenta, para saber que mi registro se completó. Requiere: #1.
+17. Como cliente y administrador, queremos recibir un email al solicitar una cita, para conocer su día, hora, servicio y estado pendiente; el administrador también recibe la identidad del cliente. Requiere: #2.
+18. Como cliente, quiero recibir un email cuando el administrador acepte mi cita o proponga otro horario, para conocer la decisión y, ante una propuesta, el nuevo horario y cómo aceptarla o rechazarla desde la aplicación. Requiere: #5 y #6.
+19. Como cliente, quiero recibir un email cuando el administrador cancele mi cita, para conocer la cancelación y su motivo. Requiere: #15.
