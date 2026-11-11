@@ -32,6 +32,7 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
 });
 
 test('el administrador puede proponer otro horario para una solicitud pendiente', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   const email = `story6-${crypto.randomUUID()}@example.com`;
   await page.goto('/');
   const registro = page.getByRole('form', { name: 'Registro' });
@@ -100,6 +101,24 @@ test('el administrador puede proponer otro horario para una solicitud pendiente'
     await expect(citaPropuesta).toContainText('propuesta');
     const inicioMostrado = await citaPropuesta.locator('time').getAttribute('datetime');
     expect(Date.parse(inicioMostrado ?? '')).toBe(Date.parse(fechaPropuesta));
+
+    await page.goto('/');
+    const misCitas = page.getByRole('region', { name: 'Mis citas' });
+    const propuestaCliente = misCitas.getByRole('listitem').filter({ hasText: 'Propuesta' });
+    await expect(propuestaCliente).toContainText('Espalda');
+    await propuestaCliente.getByRole('button', { name: 'Rechazar propuesta' }).click();
+    await expect(misCitas.getByRole('status')).toHaveText('La cita quedó cancelada.');
+    await expect(misCitas.getByRole('listitem').filter({ hasText: 'Espalda' })).toContainText('Cancelada');
+    expect(sql(`select estado from public.citas where inicio = '${fechaPropuesta}' and cliente_id = (select id from auth.users where email = '${email}')`).trim()).toBe('cancelada');
+
+    sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, '${inicio.toISOString()}', 'Espalda', 'propuesta' from auth.users where email = '${email}'`);
+    await page.reload();
+    const segundaPropuesta = misCitas.getByRole('listitem').filter({ hasText: 'Propuesta' });
+    await segundaPropuesta.getByRole('button', { name: 'Aceptar propuesta' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(misCitas.getByRole('status')).toHaveText('La cita quedó confirmada.');
+    await expect(misCitas.getByRole('listitem').filter({ hasText: 'Confirmada' }).filter({ hasText: 'Espalda' })).toBeVisible();
+    expect(sql(`select estado from public.citas where inicio = '${inicio.toISOString()}' and cliente_id = (select id from auth.users where email = '${email}')`).trim()).toBe('confirmada');
   } finally {
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
     sql(`update public.perfiles set es_administrador = false where id = (select id from auth.users where email = '${email}')`);

@@ -276,3 +276,68 @@ test('cada cliente consulta únicamente sus propias citas', async () => {
   const sinSesion = await anonimo.from('citas').select('inicio,servicio,estado');
   assert.ok(sinSesion.error || sinSesion.data.length === 0);
 });
+
+test('solo el cliente puede responder una propuesta vigente y el rechazo libera el horario', async () => {
+  const propietario = await cliente();
+  const ajeno = await cliente();
+  const { data: { user } } = await propietario.auth.getUser();
+  const { data: { user: usuarioAjeno } } = await ajeno.auth.getUser();
+  try {
+    const inicio = await horarioLibre(propietario);
+    assert.equal((await propietario.rpc('solicitar_cita', { inicio_cita: inicio, servicio_cita: 'Espalda' })).error, null);
+    const { data: cita } = await propietario.from('citas').select('id').eq('inicio', inicio).single();
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', `update public.citas set estado = 'propuesta' where id = '${cita.id}'`]);
+    const intentoAjeno = await ajeno.rpc('responder_propuesta', { p_cita_id: cita.id, p_decision: 'aceptar' });
+    assert.notEqual(intentoAjeno.data, 'confirmada');
+    const respuesta = await propietario.rpc('responder_propuesta', { p_cita_id: cita.id, p_decision: 'rechazar' });
+    assert.equal(respuesta.error, null);
+    assert.equal(respuesta.data, 'cancelada');
+    const ocupado = await propietario.rpc('horarios_ocupados', { desde: inicio, hasta: new Date(Date.parse(inicio) + 3600000).toISOString() });
+    assert.equal(ocupado.data.length, 0);
+    assert.equal((await propietario.from('citas').select('estado').eq('id', cita.id).single()).data.estado, 'cancelada');
+  } finally {
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', `delete from public.citas where cliente_id = '${user.id}'; delete from auth.users where id in ('${user.id}', '${usuarioAjeno.id}')`]);
+  }
+});
+
+test('aceptar una propuesta confirma una sola vez y una propuesta vencida se cancela', async () => {
+  const supabase = await cliente();
+  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const inicio = await horarioLibre(supabase);
+    assert.equal((await supabase.rpc('solicitar_cita', { inicio_cita: inicio, servicio_cita: 'Espalda' })).error, null);
+    const { data: cita } = await supabase.from('citas').select('id').eq('inicio', inicio).single();
+    const sql = consulta => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', consulta]);
+    sql(`update public.citas set estado = 'propuesta' where id = '${cita.id}'`);
+    const respuestas = await Promise.all(['aceptar', 'rechazar'].map(p_decision => supabase.rpc('responder_propuesta', { p_cita_id: cita.id, p_decision })));
+    assert.ok(['confirmada,no_vigente', 'cancelada,no_vigente'].includes(respuestas.map(r => r.data).sort().join(',')));
+    sql(`update public.citas set estado = 'propuesta', inicio = now() + interval '23 hours' where id = '${cita.id}'`);
+    const vencida = await supabase.rpc('responder_propuesta', { p_cita_id: cita.id, p_decision: 'aceptar' });
+    assert.ok(['cancelada', 'no_vigente'].includes(vencida.data));
+    assert.equal((await supabase.from('citas').select('estado').eq('id', cita.id).single()).data.estado, 'cancelada');
+  } finally {
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', `delete from public.citas where cliente_id = '${user.id}'; delete from auth.users where id = '${user.id}'`]);
+  }
+});
+
+test('el vencimiento programado cancela propuestas y solicitudes y libera sus horarios', async () => {
+  const supabase = await cliente();
+  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const resultado = execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-t', '-A', '-c', `
+      begin;
+      insert into public.citas (cliente_id, inicio, servicio, estado) values
+        ('${user.id}', now() + interval '23 hours', 'Espalda', 'propuesta'),
+        ('${user.id}', now() + interval '23 hours 1 second', 'Espalda', 'pendiente');
+      select private.expirar_solicitudes_pendientes();
+      select count(*) from public.citas where cliente_id = '${user.id}' and estado = 'cancelada';
+      select count(*) from public.citas where cliente_id = '${user.id}' and estado in ('pendiente', 'propuesta', 'confirmada');
+      select count(*) from cron.job where jobname = 'cancelar-solicitudes-pendientes-vencidas' and active;
+      rollback;
+    `], { encoding: 'utf8' });
+    const lineas = resultado.trim().split(/\r?\n/);
+    assert.deepEqual(lineas.slice(-4), ['2', '0', '1', 'ROLLBACK']);
+  } finally {
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', `delete from auth.users where id = '${user.id}'`]);
+  }
+});

@@ -14,6 +14,24 @@ export default function MisCitas({ version }: { version: number }) {
   const [estado, setEstado] = useState<'cargando' | 'listo' | 'error'>('cargando');
   const [intento, setIntento] = useState(0);
   const [ahora, setAhora] = useState<number | null>(null);
+  const [respuesta, setRespuesta] = useState<string | null>(null);
+  const [respondiendo, setRespondiendo] = useState(false);
+
+  async function responder(citaId: string, decision: 'aceptar' | 'rechazar') {
+    setRespondiendo(true);
+    setRespuesta(null);
+    try {
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
+      const { data, error } = await supabase.rpc('responder_propuesta', { p_cita_id: citaId, p_decision: decision });
+      if (error) throw error;
+      setRespuesta(data === 'confirmada' ? 'La cita quedó confirmada.' : data === 'cancelada' ? 'La cita quedó cancelada.' : 'La propuesta ya no está vigente.');
+      setIntento(valor => valor + 1);
+    } catch {
+      setRespuesta('No se pudo responder la propuesta. Intentá nuevamente.');
+    } finally {
+      setRespondiendo(false);
+    }
+  }
 
   useEffect(() => {
     setAhora(Date.now());
@@ -47,7 +65,7 @@ export default function MisCitas({ version }: { version: number }) {
   useEffect(() => {
     const instanteActual = Date.now();
     const proximoVencimiento = citas
-      .filter(cita => cita.estado === 'pendiente')
+      .filter(cita => cita.estado === 'pendiente' || cita.estado === 'propuesta')
       .map(cita => Date.parse(cita.inicio) - 24 * 60 * 60 * 1000)
       .filter(vencimiento => vencimiento > instanteActual)
       .sort((a, b) => a - b)[0];
@@ -63,16 +81,21 @@ export default function MisCitas({ version }: { version: number }) {
 
   return <section className="mis-citas" aria-labelledby="titulo-mis-citas">
     <h2 id="titulo-mis-citas">Mis citas</h2>
+    {respuesta && <p role="status">{respuesta}</p>}
     {estado === 'cargando' ? <p role="status">Cargando tus citas...</p> :
       estado === 'error' ? <><p role="alert">No se pudieron cargar tus citas.</p><button type="button" aria-label="Reintentar cargar mis citas" onClick={() => setIntento(valor => valor + 1)}>Reintentar</button></> :
       citas.length === 0 ? <p>Todavía no tenés citas.</p> :
       <ul>{citas.map(cita => {
-        const estadoVisible = ahora !== null && cita.estado === 'pendiente'
+        const estadoVisible = ahora !== null && (cita.estado === 'pendiente' || cita.estado === 'propuesta')
           && Date.parse(cita.inicio) <= ahora + 24 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
         return <li key={cita.id}>
           <h3>{cita.servicio}</h3>
           <p><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time> (Montevideo)</p>
           <p>Estado: <strong>{estadoVisible.charAt(0).toUpperCase() + estadoVisible.slice(1)}</strong></p>
+          {estadoVisible === 'propuesta' && <div className="acciones-cita">
+            <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'aceptar')}>Aceptar propuesta</button>
+            <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'rechazar')}>Rechazar propuesta</button>
+          </div>}
         </li>;
       })}</ul>}
   </section>;
