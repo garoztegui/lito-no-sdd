@@ -1,3 +1,5 @@
+import bienvenida from './emails/plantillas/bienvenida.mjs';
+
 /** @param {import('@supabase/supabase-js').SupabaseClient} supabase
  * @param {(message: {to: string, subject: string, text: string}) => Promise<unknown>} send */
 export async function enviarBienvenida(supabase, send) {
@@ -8,8 +10,7 @@ export async function enviarBienvenida(supabase, send) {
     if (claimError || !claimed) return;
     await send({
       to: user.email,
-      subject: '¡Bienvenido a LITO Reservas! 🎉',
-      text: '¡Te damos la bienvenida a LITO Reservas! 😊\n\nTu cuenta está lista. Ya podés elegir un momento para dedicarte a tu bienestar. ✨\n\nSerá un gusto acompañarte.\n\nEl equipo de LITO',
+      ...bienvenida,
     });
   } catch {
     console.error('No se pudo enviar el email de bienvenida.');

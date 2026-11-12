@@ -3,6 +3,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState, type FormEvent } from 'react';
 import { conLimite } from './limite';
+import { solicitarCitaConEmail } from './email-citas-actions';
 
 const zona = 'America/Montevideo';
 const formato = new Intl.DateTimeFormat('en-CA', {
@@ -14,12 +15,12 @@ function partes(fecha: Date) {
   return Object.fromEntries(formato.formatToParts(fecha).filter(p => p.type !== 'literal').map(p => [p.type, Number(p.value)]));
 }
 
-function fechaTexto(fecha: Date) {
+export function fechaTexto(fecha: Date) {
   const p = partes(fecha);
   return `${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`;
 }
 
-function instanteLocal(fecha: string, hora: number) {
+export function instanteLocal(fecha: string, hora: number) {
   const [year, month, day] = fecha.split('-').map(Number);
   const deseado = Date.UTC(year, month - 1, day, hora);
   let instante = deseado;
@@ -30,7 +31,7 @@ function instanteLocal(fecha: string, hora: number) {
   return instante;
 }
 
-function limiteMaximo(ahora: Date) {
+export function limiteMaximo(ahora: Date) {
   const p = partes(ahora);
   const mes = p.month - 1 + 3;
   const ultimoDia = new Date(Date.UTC(p.year, mes + 1, 0)).getUTCDate();
@@ -97,13 +98,10 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
     if (seleccion === null || !servicio || enviando) return;
     setEnviando(true);
     setMensaje('');
-    const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
     try {
-      const { error } = await conLimite(signal => supabase.rpc('solicitar_cita', {
-        inicio_cita: new Date(seleccion).toISOString(), servicio_cita: servicio,
-      }).abortSignal(signal));
-      if (error && error.code !== '23505' && error.code !== '23514') throw error;
-      setMensaje(error ? error.code === '23514' ? 'No se pudo solicitar la cita. El horario o servicio ya no está disponible.' : 'No se pudo solicitar la cita. El horario puede haber dejado de estar disponible.' : 'Solicitud enviada. Tu cita está pendiente.');
+      const resultado = await conLimite(() => solicitarCitaConEmail(new Date(seleccion).toISOString(), servicio));
+      if (resultado.error && resultado.code !== '23505' && resultado.code !== '23514') throw new Error('No se pudo confirmar');
+      setMensaje(resultado.error ? resultado.code === '23514' ? 'No se pudo solicitar la cita. El horario o servicio ya no está disponible.' : 'No se pudo solicitar la cita. El horario puede haber dejado de estar disponible.' : 'Solicitud enviada. Tu cita está pendiente.');
     } catch {
       setMensaje('No pudimos confirmar la solicitud. Revisá los horarios antes de intentar nuevamente.');
     } finally {

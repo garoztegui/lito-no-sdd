@@ -91,9 +91,12 @@ test('si la solicitud no responde se informa y termina la espera', async ({ page
   await page.getByRole('button', { name: /Disponible$/ }).first().click();
   let liberar!: () => void;
   const espera = new Promise<void>(resolve => { liberar = resolve; });
-  await page.route('**/rest/v1/rpc/solicitar_cita', async route => { await espera; await route.abort(); });
+  await page.route('**/', async route => {
+    if (route.request().method() === 'POST' && route.request().headers()['next-action']) { await espera; await route.abort(); }
+    else await route.continue();
+  });
   await page.clock.install();
-  const llamada = page.waitForRequest('**/rest/v1/rpc/solicitar_cita');
+  const llamada = page.waitForRequest(request => request.method() === 'POST' && !!request.headers()['next-action']);
   await page.getByRole('button', { name: 'Solicitar cita' }).click();
   await llamada;
   try {

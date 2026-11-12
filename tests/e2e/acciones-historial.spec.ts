@@ -43,8 +43,10 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
     await page.keyboard.press('Enter');
     await expect(filas.filter({ hasText: 'Cuerpo entero' }).filter({ hasText: 'Estado: rechazada' })).toBeVisible();
     const pendiente = filas.filter({ hasText: 'Espalda' }).filter({ hasText: 'Estado: pendiente' });
-    await pendiente.getByLabel('Nuevo horario (Montevideo)').fill(`${dia}T11:00`);
     await pendiente.getByRole('button', { name: 'Proponer otro horario' }).click();
+    await pendiente.getByLabel('Fecha').fill(dia);
+    await pendiente.getByRole('button', { name: '11:00 Disponible' }).click();
+    await pendiente.getByRole('button', { name: 'Confirmar propuesta' }).click();
     await expect(filas.filter({ hasText: 'Estado: propuesta' })).toHaveCount(2);
     await confirmada.getByLabel('Motivo de cancelación').fill('  Motivo de prueba  ');
     await confirmada.getByRole('button', { name: 'Cancelar cita' }).click();

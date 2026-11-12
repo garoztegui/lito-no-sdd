@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { aceptarSolicitud, rechazarSolicitud, proponerHorario } from './actions';
+import { aceptarSolicitud, rechazarSolicitud } from './actions';
+import ProponerHorario from './proponer-horario';
 import Disponibilidad from './disponibilidad';
 import Bloqueos from './bloqueos';
 import Servicios from './servicios';
@@ -57,13 +58,8 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
           {cita.estado === 'pendiente' && <div className="acciones-cita">
             <form action={aceptarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><button type="submit">Aceptar solicitud</button></form>
             <form action={rechazarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><button type="submit">Rechazar solicitud</button></form>
-            <form action={proponerHorario}><input type="hidden" name="citaId" value={cita.id} />
-              <label>Nuevo horario (Montevideo)<input type="datetime-local" name="nuevoInicioLocal" step="3600" required
-                defaultValue={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined} /></label>
-              {parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id &&
-                <p role="alert">{mensajes.horario_ocupado}</p>}
-              <button type="submit">Proponer otro horario</button>
-            </form>
+            <ProponerHorario key={`${cita.id}:${parametros.citaId === cita.id && parametros.resultado === 'horario_ocupado' ? Date.now() : ''}`} citaId={cita.id} fechaAnterior={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined}
+              error={parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id ? mensajes.horario_ocupado : undefined} />
           </div>}
         </li>)}</ul>}
     </section>

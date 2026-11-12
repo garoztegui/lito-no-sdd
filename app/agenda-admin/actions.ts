@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { enviarEmailsCita } from '../email-citas';
 
 async function resolverSolicitud(formData: FormData, decision: 'aceptar' | 'rechazar') {
   const citaId = formData.get('citaId');
@@ -26,6 +27,7 @@ async function resolverSolicitud(formData: FormData, decision: 'aceptar' | 'rech
     p_decision: decision,
   });
   if (error) redirect('/agenda-admin?resultado=error');
+  if (data === 'confirmada') await enviarEmailsCita(supabase, citaId, null, 'confirmacion');
 
   const resultado = data === 'confirmada' ? 'aceptada'
     : data === 'rechazada' ? 'rechazada'
@@ -65,6 +67,7 @@ export async function proponerHorario(formData: FormData) {
     p_cita_id: citaId, p_nuevo_inicio_local: nuevoInicioLocal,
   });
   if (error) redirect('/agenda-admin?resultado=error');
+  if (data === 'propuesta') await enviarEmailsCita(supabase, citaId, null, 'propuesta');
   const resultado = data === 'propuesta' ? 'propuesta'
     : data === 'cancelada' ? 'cancelada'
       : data === 'horario_no_disponible' || data === 'horario_invalido' ? 'horario_ocupado' : 'ya_resuelta';

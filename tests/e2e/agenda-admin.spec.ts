@@ -88,14 +88,20 @@ test('el administrador puede proponer otro horario para una solicitud pendiente'
   try {
     await page.goto('/agenda-admin');
     const cita = page.getByRole('listitem').filter({ hasText: email }).filter({ hasText: 'Estado: pendiente' });
-    const nuevoHorario = cita.getByLabel('Nuevo horario (Montevideo)');
-    await nuevoHorario.fill(`${horarioOcupado.slice(0, 10)}T10:00`);
     await cita.getByRole('button', { name: 'Proponer otro horario' }).click();
+    await cita.getByLabel('Fecha').fill(horarioOcupado.slice(0, 10));
+    await expect(cita.getByRole('button', { name: '10:00 Ocupado' })).toBeDisabled();
+    await cita.getByLabel('Fecha').fill(fechaPropuesta.slice(0, 10));
+    await cita.getByRole('button', { name: '10:00 Disponible' }).click();
+    sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, '${fechaPropuesta}', 'Cuerpo entero', 'confirmada' from auth.users where email = '${email}'`);
+    await cita.getByRole('button', { name: 'Confirmar propuesta' }).click();
     await expect(cita.getByRole('alert')).toHaveText('El horario elegido no está disponible. Elegí otro.');
-    await expect(nuevoHorario).toHaveValue(`${horarioOcupado.slice(0, 10)}T10:00`);
-
-    await nuevoHorario.fill(`${fechaPropuesta.slice(0, 10)}T10:00`);
-    await cita.getByRole('button', { name: 'Proponer otro horario' }).click();
+    await expect(cita.getByRole('button', { name: '10:00 Ocupado' })).toBeDisabled();
+    sql(`delete from public.citas where inicio = '${fechaPropuesta}' and cliente_id = (select id from auth.users where email = '${email}')`);
+    await page.reload();
+    await cita.getByLabel('Fecha').fill(fechaPropuesta.slice(0, 10));
+    await cita.getByRole('button', { name: '10:00 Disponible' }).click();
+    await cita.getByRole('button', { name: 'Confirmar propuesta' }).click();
     await expect(page.getByRole('status')).toHaveText('Propuesta de horario registrada.');
     const citaPropuesta = page.getByRole('listitem').filter({ hasText: email }).filter({ hasText: 'Estado: propuesta' });
     await expect(citaPropuesta).toContainText('propuesta');

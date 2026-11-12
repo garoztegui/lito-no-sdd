@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { accesoAdministrador } from '../acceso';
+import { enviarEmailsCita } from '../../../email-citas';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -26,6 +27,9 @@ export async function gestionarCita(clienteId: string, citaId: string, accion: A
       ? await acceso.supabase.rpc('proponer_horario_local', { p_cita_id: citaId, p_nuevo_inicio_local: valor })
       : await acceso.supabase.rpc('cancelar_cita_administrador', { p_cita_id: citaId, p_motivo: valor });
   if (resultado.error) return 'error';
+  if (resultado.data === 'propuesta' || (accion === 'cancelar' && resultado.data === 'cancelada')) {
+    await enviarEmailsCita(acceso.supabase, citaId, null, resultado.data === 'propuesta' ? 'propuesta' : 'cancelacion');
+  }
   if (['rechazada', 'propuesta', 'cancelada'].includes(resultado.data)) {
     revalidatePath(`/agenda-admin/clientes/${clienteId}`);
     revalidatePath('/agenda-admin');
