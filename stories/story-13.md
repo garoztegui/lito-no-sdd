@@ -6,9 +6,9 @@ Como administrador, quiero consultar los datos de los clientes y su historial de
 
 ## Criterios de aceptación
 
-- [ ] Dado que soy administrador, cuando consulto un cliente, entonces veo su nombre completo, email, teléfono y sexo.
-- [ ] Dado que soy administrador, cuando consulto el historial de un cliente, entonces veo todas sus solicitudes y citas pasadas y futuras, cualquiera sea su estado, con servicio, fecha, hora y estado.
-- [ ] Dado que no soy administrador, cuando intento consultar los datos o el historial de otro cliente, entonces no puedo acceder a ellos.
+- [x] Dado que soy administrador, cuando consulto un cliente, entonces veo su nombre completo, email, teléfono y sexo.
+- [x] Dado que soy administrador, cuando consulto el historial de un cliente, entonces veo todas sus solicitudes y citas pasadas y futuras, cualquiera sea su estado, con servicio, fecha, hora y estado.
+- [x] Dado que no soy administrador, cuando intento consultar los datos o el historial de otro cliente, entonces no puedo acceder a ellos.
 
 ## Plan
 

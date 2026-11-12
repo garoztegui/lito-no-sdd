@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { fechaConTurnoDisponible } from './horarios';
 
 async function ingresarComoCliente(page: Page) {
   await page.goto('/');
@@ -27,7 +28,7 @@ test('se muestran citas pasadas y futuras con fecha, hora y estado en Montevideo
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await expect(citas.getByRole('listitem')).toHaveCount(2);
   for (const texto of ['Espalda', '7 de enero de 2028', '10:00', 'Pendiente']) await expect(citas.getByRole('listitem').nth(0)).toContainText(texto);
-  for (const texto of ['Cuerpo entero', '8 de enero de 2024', '18:00', 'Pendiente']) await expect(citas.getByRole('listitem').nth(1)).toContainText(texto);
+  for (const texto of ['Cuerpo entero', '8 de enero de 2024', '18:00', 'Cancelada']) await expect(citas.getByRole('listitem').nth(1)).toContainText(texto);
 });
 
 test('se muestra el historial completo cuando ocupa varias páginas', async ({ page }) => {
@@ -104,4 +105,39 @@ test('una consulta sin respuesta muestra carga y permite reintentar', async ({ p
   await page.unroute(patron);
   await citas.getByRole('button', { name: 'Reintentar' }).click();
   await expect(citas.getByText('Todavía no tenés citas.')).toBeVisible();
+});
+
+test('el cliente cancela su solicitud y el horario vuelve a estar disponible', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await ingresarComoCliente(page);
+  await page.reload();
+  await page.getByLabel('Fecha').fill(fechaConTurnoDisponible());
+  await page.getByLabel('Servicio').selectOption({ label: 'Espalda' });
+  const horario = page.getByRole('button', { name: /Disponible$/ }).first();
+  const nombre = await horario.innerText();
+  const hora = nombre.slice(0, 5);
+  await horario.click();
+  await page.getByRole('button', { name: 'Solicitar cita' }).click();
+  await expect(page.getByText('Solicitud enviada. Tu cita está pendiente.')).toBeVisible();
+  await expect(page.getByRole('button', { name: `${hora} Ocupado` })).toBeDisabled();
+  const citas = page.getByRole('region', { name: 'Mis citas' });
+  await citas.getByRole('button', { name: 'Cancelar cita' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(citas.getByRole('status')).toHaveText('La cita quedó cancelada.');
+  await expect(citas.getByRole('listitem')).toContainText('Cancelada');
+  await expect(page.getByRole('button', { name: `${hora} Disponible` })).toBeEnabled();
+});
+
+test('una cita confirmada dentro del límite informa que no puede cancelarse', async ({ page }) => {
+  await ingresarComoCliente(page);
+  const inicio = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString();
+  await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
+    { id: '11111111-1111-1111-1111-111111111111', inicio, servicio: 'Espalda', estado: 'confirmada' },
+  ] }));
+  await page.route(/\/rest\/v1\/rpc\/cancelar_cita_cliente(?:\?|$)/, route => route.fulfill({ json: 'fuera_de_plazo' }));
+  await page.reload();
+  const citas = page.getByRole('region', { name: 'Mis citas' });
+  await citas.getByRole('button', { name: 'Cancelar cita' }).click();
+  await expect(citas.getByRole('status')).toHaveText('Ya no podés cancelar esta cita: faltan 24 horas o menos.');
+  await expect(citas.getByRole('listitem')).toContainText('Confirmada');
 });

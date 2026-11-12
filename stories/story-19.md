@@ -7,12 +7,12 @@ Como cliente, quiero recibir un email cuando el administrador cancele mi cita, p
 ## Criterios de aceptación
 
 - [ ] Dada una cita confirmada, cuando el administrador la cancela, el cliente recibe un email que informa la cancelación y su motivo.
-- [ ] Dada una cancelación registrada, cuando falla el envío del email, la cita permanece cancelada y se reintenta el envío.
+- [ ] Dada una cancelación registrada, cuando falla el envío del email, la cita permanece cancelada y no se reintenta el envío.
 
 ## Plan
 
 - Preparar el mensaje de cancelación con el motivo indicado por el administrador.
-- Enviarlo al cliente cuando se registre la cancelación y reintentarlo si falla.
+- Enviarlo al cliente cuando se registre la cancelación, sin reintentos si falla.
 - Verificar el destinatario, el contenido y el comportamiento ante fallos.
 
 ## Fuera de alcance

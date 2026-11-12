@@ -39,7 +39,7 @@ function limiteMaximo(ahora: Date) {
   return instanteLocal(texto, p.hour) + p.minute * 60000 + p.second * 1000;
 }
 
-export default function Agenda({ onSolicitudFinalizada }: { onSolicitudFinalizada: () => void }) {
+export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
   const ahora = new Date();
   const minimo = ahora.getTime() + 24 * 60 * 60 * 1000;
   const maximo = limiteMaximo(ahora);
@@ -47,8 +47,11 @@ export default function Agenda({ onSolicitudFinalizada }: { onSolicitudFinalizad
   const [servicio, setServicio] = useState('');
   const [seleccion, setSeleccion] = useState<number | null>(null);
   const [ocupados, setOcupados] = useState<number[]>([]);
+  const [disponibilidad, setDisponibilidad] = useState<{ dia: number; hora: number }[]>([]);
+  const [bloqueados, setBloqueados] = useState<number[]>([]);
+  const [servicios, setServicios] = useState<{ id: string; nombre: string }[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [errorConsulta, setErrorConsulta] = useState(false);
+  const [errorConsulta, setErrorConsulta] = useState<'horarios' | 'servicios' | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [actualizacion, setActualizacion] = useState(0);
@@ -58,24 +61,34 @@ export default function Agenda({ onSolicitudFinalizada }: { onSolicitudFinalizad
     const controlador = new AbortController();
     const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
     setCargando(true);
-    conLimite(signal => supabase.rpc('horarios_ocupados', {
-      desde: new Date(instanteLocal(fecha, 7)).toISOString(),
-      hasta: new Date(instanteLocal(fecha, 19)).toISOString(),
-    }).abortSignal(signal), controlador).then(({ data, error }) => {
+    Promise.all([
+      conLimite(signal => supabase.rpc('horarios_ocupados', {
+        desde: new Date(instanteLocal(fecha, 0)).toISOString(),
+        hasta: new Date(instanteLocal(new Date(Date.parse(`${fecha}T00:00:00Z`) + 86400000).toISOString().slice(0, 10), 0)).toISOString(),
+      }).abortSignal(signal), controlador),
+      conLimite(signal => supabase.rpc('disponibilidad_semanal').abortSignal(signal), controlador),
+      conLimite(signal => supabase.rpc('horarios_bloqueados', { p_fecha: fecha }).abortSignal(signal), controlador),
+      conLimite(signal => supabase.rpc('listar_servicios').abortSignal(signal), controlador),
+    ]).then(([ocupacion, semanal, bloqueos, catalogo]) => {
       if (!vigente) return;
-      if (error) throw error;
-      setOcupados((data ?? []).map((cita: { inicio: string }) => Date.parse(cita.inicio)));
-      setErrorConsulta(false);
+      if (ocupacion.error || semanal.error || bloqueos.error) throw ocupacion.error ?? semanal.error ?? bloqueos.error;
+      if (catalogo.error) { setErrorConsulta('servicios'); return; }
+      setOcupados((ocupacion.data ?? []).map((cita: { inicio: string }) => Date.parse(cita.inicio)));
+      setDisponibilidad(semanal.data ?? []);
+      setBloqueados((bloqueos.data ?? []).map((bloqueo: { hora: number }) => bloqueo.hora));
+      setServicios(catalogo.data ?? []);
+      setServicio(actual => (catalogo.data ?? []).some((item: { nombre: string }) => item.nombre === actual) ? actual : '');
+      setErrorConsulta(null);
     }).catch(() => {
-      if (vigente) setErrorConsulta(true);
+      if (vigente) setErrorConsulta('horarios');
     }).finally(() => {
       if (vigente) setCargando(false);
     });
     return () => { vigente = false; controlador.abort(); };
-  }, [fecha, actualizacion]);
+  }, [fecha, actualizacion, versionCitas]);
 
   const dia = new Date(`${fecha}T12:00:00Z`).getUTCDay();
-  const horarios = dia === 0 || dia === 6 ? [] : Array.from({ length: 12 }, (_, i) => i + 7)
+  const horarios = disponibilidad.filter(turno => turno.dia === (dia || 7) && !bloqueados.includes(turno.hora)).map(turno => turno.hora)
     .map(hora => ({ hora, inicio: instanteLocal(fecha, hora) }))
     .filter(({ inicio }) => inicio >= minimo && inicio <= maximo);
 
@@ -89,8 +102,8 @@ export default function Agenda({ onSolicitudFinalizada }: { onSolicitudFinalizad
       const { error } = await conLimite(signal => supabase.rpc('solicitar_cita', {
         inicio_cita: new Date(seleccion).toISOString(), servicio_cita: servicio,
       }).abortSignal(signal));
-      if (error && error.code !== '23505') throw error;
-      setMensaje(error ? 'No se pudo solicitar la cita. El horario puede haber dejado de estar disponible.' : 'Solicitud enviada. Tu cita está pendiente.');
+      if (error && error.code !== '23505' && error.code !== '23514') throw error;
+      setMensaje(error ? error.code === '23514' ? 'No se pudo solicitar la cita. El horario o servicio ya no está disponible.' : 'No se pudo solicitar la cita. El horario puede haber dejado de estar disponible.' : 'Solicitud enviada. Tu cita está pendiente.');
     } catch {
       setMensaje('No pudimos confirmar la solicitud. Revisá los horarios antes de intentar nuevamente.');
     } finally {
@@ -107,13 +120,13 @@ export default function Agenda({ onSolicitudFinalizada }: { onSolicitudFinalizad
     <form onSubmit={solicitar}>
       <label>Servicio<select value={servicio} onChange={e => setServicio(e.target.value)} required>
         <option value="">Elegí un servicio</option>
-        <option>Masaje deportivo</option><option>Cuerpo entero</option><option>Espalda</option>
+        {servicios.map(item => <option key={item.id} value={item.nombre}>{item.nombre}</option>)}
       </select></label>
       <label>Fecha<input type="date" value={fecha} min={fechaTexto(new Date(minimo))} max={fechaTexto(new Date(maximo))}
         onChange={e => { if (e.target.value) { setFecha(e.target.value); setSeleccion(null); setMensaje(''); } }} /></label>
       <p>{new Intl.DateTimeFormat('es-UY', { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${fecha}T12:00:00Z`))}</p>
       <fieldset><legend>Horarios (Montevideo)</legend>
-        {cargando ? <p>Consultando horarios...</p> : errorConsulta ? <><p role="alert">No se pudieron consultar los horarios. Intentá nuevamente.</p><button type="button" onClick={() => setActualizacion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
+        {cargando ? <p>Consultando horarios...</p> : errorConsulta ? <><p role="alert">{errorConsulta === 'servicios' ? 'No se pudieron consultar los servicios. Intentá nuevamente.' : 'No se pudieron consultar los horarios. Intentá nuevamente.'}</p><button type="button" onClick={() => setActualizacion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
           <div className="horarios">{horarios.map(({ hora, inicio }) => {
             const ocupado = ocupados.includes(inicio);
             return <button key={inicio} type="button" className="horario" disabled={ocupado || enviando}
@@ -122,7 +135,7 @@ export default function Agenda({ onSolicitudFinalizada }: { onSolicitudFinalizad
             </button>;
           })}</div>}
       </fieldset>
-      <button type="submit" disabled={seleccion === null || enviando || cargando} aria-busy={enviando}>{enviando ? 'Enviando...' : 'Solicitar cita'}</button>
+      <button type="submit" disabled={seleccion === null || enviando || cargando || errorConsulta !== null} aria-busy={enviando}>{enviando ? 'Enviando...' : 'Solicitar cita'}</button>
       <p role="status">{mensaje}</p>
     </form>
   </section>;

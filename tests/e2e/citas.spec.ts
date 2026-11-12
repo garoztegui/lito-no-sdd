@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { fechaConTurnoDisponible } from './horarios';
 
 test('un cliente solicita un turno disponible', async ({ page }) => {
   await page.goto('/');
@@ -57,10 +58,9 @@ test('un horario tomado mientras otro cliente lo solicita muestra un error', asy
     await expect(registro.getByText('Cuenta creada.')).toBeVisible();
     await page.reload();
   }
-  const fecha = new Date(Date.now() + (35 + Math.floor(Math.random() * 25)) * 86400000);
-  while ([0, 6].includes(fecha.getUTCDay())) fecha.setUTCDate(fecha.getUTCDate() + 1);
+  const fecha = fechaConTurnoDisponible();
   for (const page of paginas) {
-    await page.getByLabel('Fecha').fill(fecha.toISOString().slice(0, 10));
+    await page.getByLabel('Fecha').fill(fecha);
     await page.getByLabel('Servicio').selectOption({ label: 'Espalda' });
     await expect(page.getByRole('button', { name: /Disponible$/ }).first()).toBeVisible();
   }
@@ -86,9 +86,7 @@ test('si la solicitud no responde se informa y termina la espera', async ({ page
   await registro.getByRole('button', { name: 'Registrarse' }).click();
   await expect(registro.getByText('Cuenta creada.')).toBeVisible();
   await page.reload();
-  const fecha = new Date(Date.now() + 40 * 86400000);
-  while ([0, 6].includes(fecha.getUTCDay())) fecha.setUTCDate(fecha.getUTCDate() + 1);
-  await page.getByLabel('Fecha').fill(fecha.toISOString().slice(0, 10));
+  await page.getByLabel('Fecha').fill(fechaConTurnoDisponible());
   await page.getByLabel('Servicio').selectOption({ label: 'Espalda' });
   await page.getByRole('button', { name: /Disponible$/ }).first().click();
   let liberar!: () => void;

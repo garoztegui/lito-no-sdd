@@ -341,3 +341,32 @@ test('el vencimiento programado cancela propuestas y solicitudes y libera sus ho
     execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', `delete from auth.users where id = '${user.id}'`]);
   }
 });
+
+test('el cliente cancela sus citas vigentes sin poder cancelar citas ajenas o confirmadas dentro del límite', async () => {
+  const propietario = await cliente();
+  const otro = await cliente();
+  const { data: { user } } = await propietario.auth.getUser();
+  const { data: { user: ajeno } } = await otro.auth.getUser();
+  const sql = consulta => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', consulta]);
+  try {
+    const inicio = await horarioLibre(propietario);
+    assert.equal((await propietario.rpc('solicitar_cita', { inicio_cita: inicio, servicio_cita: 'Espalda' })).error, null);
+    const { data: cita } = await propietario.from('citas').select('id').eq('inicio', inicio).single();
+    const intentoAjeno = await otro.rpc('cancelar_cita_cliente', { p_cita_id: cita.id });
+    assert.equal(intentoAjeno.error, null);
+    assert.equal(intentoAjeno.data, 'no_disponible');
+    assert.equal((await propietario.from('citas').select('estado').eq('id', cita.id).single()).data.estado, 'pendiente');
+    assert.equal((await otro.rpc('horarios_ocupados', { desde: inicio, hasta: new Date(Date.parse(inicio) + 3600000).toISOString() })).data.length, 1);
+    const cancelada = await propietario.rpc('cancelar_cita_cliente', { p_cita_id: cita.id });
+    assert.equal(cancelada.error, null);
+    assert.equal(cancelada.data, 'cancelada');
+    assert.equal((await propietario.rpc('horarios_ocupados', { desde: inicio, hasta: new Date(Date.parse(inicio) + 3600000).toISOString() })).data.length, 0);
+    sql(`update public.citas set estado = 'confirmada' where id = '${cita.id}'`);
+    assert.equal((await propietario.rpc('cancelar_cita_cliente', { p_cita_id: cita.id })).data, 'cancelada');
+    sql(`update public.citas set estado = 'confirmada', inicio = now() + interval '23 hours' where id = '${cita.id}'`);
+    assert.equal((await propietario.rpc('cancelar_cita_cliente', { p_cita_id: cita.id })).data, 'fuera_de_plazo');
+    assert.equal((await propietario.from('citas').select('estado').eq('id', cita.id).single()).data.estado, 'confirmada');
+  } finally {
+    sql(`delete from public.citas where cliente_id in ('${user.id}', '${ajeno.id}'); delete from auth.users where id in ('${user.id}', '${ajeno.id}')`);
+  }
+});

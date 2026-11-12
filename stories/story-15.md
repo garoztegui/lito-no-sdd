@@ -6,9 +6,9 @@ Como administrador, quiero gestionar las citas futuras desde el historial de un 
 
 ## Criterios de aceptación
 
-- [ ] Dada una solicitud pendiente en el historial, cuando el administrador la rechaza o propone un horario disponible, entonces se aplica la acción correspondiente: al rechazarla se libera el horario; al proponer otro, se libera el original y la propuesta queda pendiente de respuesta del cliente.
-- [ ] Dada una cita confirmada a la que le faltan más de 24 horas, cuando el administrador la cancela indicando el motivo, entonces la cita queda cancelada y el horario queda disponible; si faltan 24 horas o menos, no puede cancelarla.
-- [ ] Dada una propuesta pendiente de respuesta del cliente, cuando el administrador consulta la cita en el historial, entonces no puede realizar acciones sobre ella; tampoco puede proponer otro horario para una cita confirmada.
+- [x] Dada una solicitud pendiente en el historial, cuando el administrador la rechaza o propone un horario disponible, entonces se aplica la acción correspondiente: al rechazarla se libera el horario; al proponer otro, se libera el original y la propuesta queda pendiente de respuesta del cliente.
+- [x] Dada una cita confirmada a la que le faltan más de 24 horas, cuando el administrador la cancela indicando el motivo, entonces la cita queda cancelada y el horario queda disponible; si faltan 24 horas o menos, no puede cancelarla.
+- [x] Dada una propuesta pendiente de respuesta del cliente, cuando el administrador consulta la cita en el historial, entonces no puede realizar acciones sobre ella; tampoco puede proponer otro horario para una cita confirmada.
 
 ## Plan
 

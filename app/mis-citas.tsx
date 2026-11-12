@@ -9,13 +9,30 @@ const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', dateStyle: 'long', timeStyle: 'short', hourCycle: 'h23',
 });
 
-export default function MisCitas({ version }: { version: number }) {
+export default function MisCitas({ version, onCancelacion }: { version: number; onCancelacion: () => void }) {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [estado, setEstado] = useState<'cargando' | 'listo' | 'error'>('cargando');
   const [intento, setIntento] = useState(0);
   const [ahora, setAhora] = useState<number | null>(null);
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [respondiendo, setRespondiendo] = useState(false);
+
+  async function cancelar(citaId: string) {
+    setRespondiendo(true);
+    setRespuesta(null);
+    try {
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
+      const { data, error } = await supabase.rpc('cancelar_cita_cliente', { p_cita_id: citaId });
+      if (error) throw error;
+      setRespuesta(data === 'cancelada' ? 'La cita quedó cancelada.' : data === 'fuera_de_plazo' ? 'Ya no podés cancelar esta cita: faltan 24 horas o menos.' : 'La cita ya no está disponible para cancelar.');
+      if (data === 'cancelada') onCancelacion();
+      setIntento(valor => valor + 1);
+    } catch {
+      setRespuesta('No se pudo cancelar la cita. Intentá nuevamente.');
+    } finally {
+      setRespondiendo(false);
+    }
+  }
 
   async function responder(citaId: string, decision: 'aceptar' | 'rechazar') {
     setRespondiendo(true);
@@ -92,6 +109,8 @@ export default function MisCitas({ version }: { version: number }) {
           <h3>{cita.servicio}</h3>
           <p><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time> (Montevideo)</p>
           <p>Estado: <strong>{estadoVisible.charAt(0).toUpperCase() + estadoVisible.slice(1)}</strong></p>
+          {(estadoVisible === 'pendiente' || estadoVisible === 'confirmada') && ahora !== null && Date.parse(cita.inicio) > ahora &&
+            <button type="button" disabled={respondiendo} onClick={() => cancelar(cita.id)}>Cancelar cita</button>}
           {estadoVisible === 'propuesta' && <div className="acciones-cita">
             <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'aceptar')}>Aceptar propuesta</button>
             <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'rechazar')}>Rechazar propuesta</button>

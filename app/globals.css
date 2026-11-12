@@ -36,3 +36,23 @@ legend { margin-bottom: .75rem; font-weight: 600; }
 .mis-citas li h3 { margin: 0; font-size: 1.1rem; }
 .mis-citas li p { margin: .4rem 0 0; }
 .mis-citas button { width: auto; min-width: 10rem; }
+.disponibilidad { margin: 1.5rem 0; }
+.disponibilidad fieldset { margin: 1rem 0; }
+.disponibilidad legend { font-weight: 700; }
+.turnos-semanales { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: .4rem; }
+.turnos-semanales label { display: flex; align-items: center; gap: .4rem; min-height: 2.75rem; }
+.turnos-semanales input { width: 1.25rem; height: 1.25rem; min-height: 0; padding: 0; accent-color: var(--acento); }
+.disponibilidad button { width: auto; margin: .4rem .5rem .4rem 0; }
+.bloqueos { margin: 1.5rem 0; }
+.bloqueos .bloqueo-dia { display: flex; align-items: center; gap: .5rem; min-height: 2.75rem; }
+.bloqueos .bloqueo-dia input { width: 1.25rem; height: 1.25rem; min-height: 0; padding: 0; accent-color: var(--acento); }
+.bloqueos button { width: auto; margin: .4rem .5rem .4rem 0; }
+.servicios { margin: 1.5rem 0; }
+.servicios ul { padding-left: 0; list-style: none; }
+.servicios li { margin: 1rem 0; }
+.servicios button { width: auto; }
+.datos-cliente { max-width: 48rem; margin-top: 2rem; overflow-wrap: anywhere; }
+.clientes-admin .mis-citas li { overflow-wrap: anywhere; }
+.acciones-historial { display: grid; gap: .75rem; margin-top: .75rem; }
+.acciones-historial form { padding: 1rem; }
+.acciones-historial textarea { width: 100%; min-height: 5rem; padding: .6rem .75rem; border: 1px solid #a6a69a; border-radius: .4rem; background: #11110f; color: var(--texto); font: inherit; }

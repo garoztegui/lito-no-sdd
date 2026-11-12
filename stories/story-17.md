@@ -8,12 +8,12 @@ Como cliente y administrador, queremos recibir un email al solicitar una cita, p
 
 - [ ] Dada una cita solicitada, cuando se registra, el cliente recibe un email con el día, la hora, el servicio y el estado pendiente.
 - [ ] Dada una cita solicitada, cuando se registra, el administrador recibe un email con el nombre del cliente, el día, la hora y el servicio.
-- [ ] Dada una solicitud registrada, cuando falla el envío de alguno de los emails, la solicitud permanece pendiente y se reintenta el email que falló.
+- [ ] Dada una solicitud registrada, cuando falla el envío de alguno de los emails, la solicitud permanece pendiente y no se reintenta el email que falló.
 
 ## Plan
 
 - Preparar los mensajes para el cliente y el administrador.
-- Enviarlos cuando se registre la solicitud y reintentar el que falle.
+- Enviarlos cuando se registre la solicitud, sin reintentos si fallan.
 - Verificar los destinatarios, los datos de cada mensaje y el comportamiento ante fallos.
 
 ## Fuera de alcance

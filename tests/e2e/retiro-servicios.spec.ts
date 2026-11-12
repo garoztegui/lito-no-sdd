@@ -1,0 +1,60 @@
+﻿import { execFileSync } from 'node:child_process';
+import { expect, test } from '@playwright/test';
+
+test('el administrador bloquea servicios con citas y borra servicios sin citas futuras activas', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const sufijo = crypto.randomUUID();
+  const email = `story12-${sufijo}@example.test`;
+  const nombreActivo = `Servicio activo ${sufijo}`;
+  const nombrePasado = `Servicio histórico ${sufijo}`;
+  const sql = (consulta: string) => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-t', '-A', '-c', consulta], { encoding: 'utf8' }).trim();
+  let activoId = '';
+  let pasadoId = '';
+  try {
+    await page.goto('/');
+    const registro = page.getByRole('form', { name: 'Registro' });
+    await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
+    await registro.getByLabel('Email').fill(email);
+    await registro.getByLabel('Teléfono').fill('099123456');
+    await registro.getByLabel('Contraseña').fill('ClaveSegura123');
+    await registro.getByRole('button', { name: 'Registrarse' }).click();
+    await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+    sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${email}')`);
+    await page.goto('/agenda-admin');
+    const catalogo = page.getByRole('region', { name: 'Catálogo de servicios' });
+    await catalogo.getByLabel('Nombre del nuevo servicio').fill(nombreActivo);
+    await catalogo.getByRole('button', { name: 'Crear servicio' }).click();
+    await expect(catalogo.getByText('Servicio creado.')).toBeVisible();
+    activoId = sql(`select id from private.servicios where nombre = '${nombreActivo}'`);
+    expect(activoId).toMatch(/^[0-9a-f-]{36}$/);
+    await catalogo.getByLabel('Nombre del nuevo servicio').fill(nombrePasado);
+    await catalogo.getByRole('button', { name: 'Crear servicio' }).click();
+    await expect(catalogo.getByLabel(`Nombre de ${nombrePasado}`)).toBeVisible();
+    pasadoId = sql(`select id from private.servicios where nombre = '${nombrePasado}'`);
+    expect(pasadoId).toMatch(/^[0-9a-f-]{36}$/);
+    sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() + interval '300 days', '${nombreActivo}', 'pendiente' from auth.users where email = '${email}'`);
+    sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() - interval '1 day', '${nombrePasado}', 'confirmada' from auth.users where email = '${email}'`);
+    const activo = catalogo.getByRole('listitem').filter({ hasText: `Nombre de ${nombreActivo}` });
+    await activo.getByRole('button', { name: `Borrar servicio ${nombreActivo}` }).click();
+    await expect(catalogo.getByText('El servicio tiene citas futuras. Podés bloquearlo para impedir nuevas reservas.')).toBeVisible();
+    await activo.getByRole('button', { name: `Bloquear servicio ${nombreActivo}` }).focus();
+    await page.keyboard.press('Enter');
+    await expect(catalogo.getByText('Servicio bloqueado.')).toBeVisible();
+    await expect(activo).toContainText('Estado: Bloqueado');
+    expect(sql(`select count(*) from public.citas where cliente_id = (select id from auth.users where email = '${email}') and servicio = '${nombreActivo}' and estado = 'pendiente'`)).toBe('1');
+    await page.goto('/');
+    await expect(page.getByRole('option', { name: nombrePasado })).toBeAttached();
+    await expect(page.getByRole('option', { name: nombreActivo })).toHaveCount(0);
+    await page.goto('/agenda-admin');
+    const historico = catalogo.getByRole('listitem').filter({ hasText: `Nombre de ${nombrePasado}` });
+    await historico.getByRole('button', { name: `Borrar servicio ${nombrePasado}` }).click();
+    await expect(catalogo.getByText('Servicio borrado.')).toBeVisible();
+    await expect(catalogo.getByLabel(`Nombre de ${nombrePasado}`)).toHaveCount(0);
+    expect(sql(`select count(*) from public.citas where cliente_id = (select id from auth.users where email = '${email}') and servicio = '${nombrePasado}' and servicio_id is null`)).toBe('1');
+  } finally {
+    sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
+    if (/^[0-9a-f-]{36}$/.test(activoId)) sql(`delete from private.servicios where id = '${activoId}'`);
+    if (/^[0-9a-f-]{36}$/.test(pasadoId)) sql(`delete from private.servicios where id = '${pasadoId}'`);
+    sql(`delete from auth.users where email = '${email}'`);
+  }
+});

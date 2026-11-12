@@ -6,9 +6,9 @@ Como administrador, quiero configurar la disponibilidad semanal habitual, para d
 
 ## Criterios de aceptación
 
-- [ ] Dada una configuración semanal sin citas afectadas, cuando el administrador la guarda, entonces los horarios ofrecidos para solicitar citas reflejan la nueva disponibilidad.
-- [ ] Dada una reducción de disponibilidad que afecta citas y ninguna ocurre dentro de las próximas 24 horas, cuando el administrador intenta guardarla, entonces se le informa y se le pregunta si desea cancelar todas las citas afectadas; si acepta, se cancelan y se guarda el cambio, y si no acepta, no se modifican las citas ni la disponibilidad.
-- [ ] Dada una reducción de disponibilidad que afecta alguna cita dentro de las próximas 24 horas, cuando el administrador intenta guardarla, entonces se le informa que no puede realizar el cambio y no se modifican las citas ni la disponibilidad.
+- [x] Dada una configuración semanal sin citas afectadas, cuando el administrador la guarda, entonces los horarios ofrecidos para solicitar citas reflejan la nueva disponibilidad.
+- [x] Dada una reducción de disponibilidad que afecta citas y ninguna ocurre dentro de las próximas 24 horas, cuando el administrador intenta guardarla, entonces se le informa y se le pregunta si desea cancelar todas las citas afectadas; si acepta, se cancelan y se guarda el cambio, y si no acepta, no se modifican las citas ni la disponibilidad.
+- [x] Dada una reducción de disponibilidad que afecta alguna cita dentro de las próximas 24 horas, cuando el administrador intenta guardarla, entonces se le informa que no puede realizar el cambio y no se modifican las citas ni la disponibilidad.
 
 ## Plan
 

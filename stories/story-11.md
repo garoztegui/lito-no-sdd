@@ -6,9 +6,9 @@ Como administrador, quiero administrar el catálogo de servicios, para mantener 
 
 ## Criterios de aceptación
 
-- [ ] Dado un nombre que no pertenece a otro servicio, cuando el administrador crea un servicio con ese nombre, entonces queda disponible para nuevas solicitudes y sus sesiones duran 60 minutos.
-- [ ] Dado un servicio existente y un nombre que no pertenece a otro servicio, cuando el administrador cambia su nombre, entonces se actualiza el catálogo y el nombre en todas las citas futuras de ese servicio.
-- [ ] Dado un nombre que ya pertenece a otro servicio, cuando el administrador intenta crear o renombrar un servicio con ese nombre, entonces no se guarda el cambio y se informa que el nombre ya existe.
+- [x] Dado un nombre que no pertenece a otro servicio, cuando el administrador crea un servicio con ese nombre, entonces queda disponible para nuevas solicitudes y sus sesiones duran 60 minutos.
+- [x] Dado un servicio existente y un nombre que no pertenece a otro servicio, cuando el administrador cambia su nombre, entonces se actualiza el catálogo y el nombre en todas las citas futuras de ese servicio.
+- [x] Dado un nombre que ya pertenece a otro servicio, cuando el administrador intenta crear o renombrar un servicio con ese nombre, entonces no se guarda el cambio y se informa que el nombre ya existe.
 
 ## Plan
 

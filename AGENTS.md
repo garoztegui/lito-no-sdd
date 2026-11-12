@@ -8,6 +8,9 @@ cómoda de usar desde el celular. El stack acordado es Next.js, TypeScript,
 Supabase y Vercel. La aplicación requiere conexión, usa español y no maneja
 monedas.
 
+Los proyectos de producción son `lito-reservas` en Vercel y
+`lito-reservas-v2` en Supabase.
+
 El administrador se configura manualmente mediante su bandera en la base de
 datos; por ahora no hay gestión de accesos administrativos. Para registrarse se
 solicitan nombre completo, email, teléfono, sexo y contraseña. Un servicio no

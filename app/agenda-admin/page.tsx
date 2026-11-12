@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { aceptarSolicitud, rechazarSolicitud, proponerHorario } from './actions';
+import Disponibilidad from './disponibilidad';
+import Bloqueos from './bloqueos';
+import Servicios from './servicios';
 
 const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', dateStyle: 'long', timeStyle: 'short', hourCycle: 'h23',
@@ -41,6 +44,10 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
     if ((resultado.data ?? []).length < porPagina) break;
   }
   return <main className="container"><h1>Agenda administrativa</h1><a href="/">Volver al inicio</a>
+    <p><a href="/agenda-admin/clientes">Consultar clientes e historial</a></p>
+    <Servicios />
+    <Bloqueos />
+    <Disponibilidad />
     {parametros.resultado && parametros.resultado !== 'horario_ocupado' && mensajes[parametros.resultado] && <p role="status">{mensajes[parametros.resultado]}</p>}
     <section className="mis-citas" aria-label="Citas futuras">
       {error ? <><p role="alert">No se pudo cargar la agenda. Intentá nuevamente.</p><a href="/agenda-admin">Reintentar</a></> :
