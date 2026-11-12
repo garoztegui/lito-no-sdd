@@ -9,6 +9,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 ### Clientes y solicitudes
 
 - Los clientes pueden registrarse, iniciar sesión y solicitar citas.
+- Las cuentas administradoras no pueden solicitar ni reservar citas.
 - Para crear una cuenta se solicitan nombre completo, email, teléfono, sexo y
   contraseña.
 - Las opciones de sexo son hombre, mujer y prefiero no especificar.

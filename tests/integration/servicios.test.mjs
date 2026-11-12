@@ -63,12 +63,15 @@ test('crear y renombrar servicios valida permisos, duplicados y conserva el hist
       select * into r from prueba_servicios;
       if public.renombrar_servicio(r.servicio_id, r.nombre_2) <> 'nombre_existente' then raise exception 'Se aceptó renombrar a un duplicado'; end if;
       if not exists (select 1 from public.listar_servicios() where id = r.servicio_id and nombre = r.nombre_1) then raise exception 'El duplicado alteró el catálogo'; end if;
+      perform set_config('request.jwt.claim.sub', r.cliente::text, true);
       perform public.solicitar_cita(r.fecha, r.nombre_1);
+      perform set_config('request.jwt.claim.sub', r.admin::text, true);
       if public.renombrar_servicio(r.servicio_id, r.nombre_1 || ' nuevo') <> 'actualizado' then raise exception 'No se renombró el servicio'; end if;
       if (select servicio from public.citas where id = r.pasada) <> r.nombre_1 then raise exception 'Se alteró una cita pasada'; end if;
       if (select servicio from public.citas where id = r.futura) <> r.nombre_1 || ' nuevo' then raise exception 'No se actualizó una cita futura cancelada'; end if;
       if exists (select 1 from public.citas where servicio = r.nombre_1 and inicio > now()) then raise exception 'No se actualizaron todas las citas futuras'; end if;
-      if not exists (select 1 from public.citas where inicio = r.fecha and servicio = r.nombre_1 || ' nuevo') then raise exception 'No se actualizó la nueva reserva'; end if;
+      if not exists (select 1 from public.historial_cliente_administrador(r.cliente) where inicio = r.fecha and servicio = r.nombre_1 || ' nuevo') then raise exception 'No se actualizó la nueva reserva'; end if;
+      perform set_config('request.jwt.claim.sub', r.cliente::text, true);
       begin perform public.solicitar_cita(r.fecha, r.nombre_1); raise exception 'Se aceptó un servicio anterior';
       exception when check_violation then null; end;
     end $$;

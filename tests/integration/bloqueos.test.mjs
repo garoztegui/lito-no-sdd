@@ -58,10 +58,12 @@ test('un bloqueo respeta citas, confirmación, plazo, eliminación y permisos', 
       resultado := public.guardar_bloqueo(r.fecha, 12, 13, false, null);
       if resultado->>'resultado' <> 'guardado' or not exists (select 1 from public.horarios_bloqueados(r.fecha) where hora = 12)
         or private.inicio_disponible((r.fecha::timestamp + interval '12 hours') at time zone 'America/Montevideo') then raise exception 'Bloqueo sin citas no aplicado: %', resultado; end if;
+      perform set_config('request.jwt.claim.sub', r.cliente::text, true);
       begin
         perform public.solicitar_cita((r.fecha::timestamp + interval '12 hours') at time zone 'America/Montevideo', 'Espalda');
         raise exception 'Se aceptó una reserva en el bloqueo';
       exception when check_violation then null; end;
+      perform set_config('request.jwt.claim.sub', r.admin::text, true);
       select id into bloqueo from public.listar_bloqueos() where fecha = r.fecha and hora_inicio = 12 and hora_fin = 13;
       if public.eliminar_bloqueo(bloqueo) <> 'eliminado' then raise exception 'No se eliminó el bloqueo'; end if;
       if exists (select 1 from public.horarios_bloqueados(r.fecha) where hora = 12)
@@ -71,7 +73,9 @@ test('un bloqueo respeta citas, confirmación, plazo, eliminación y permisos', 
       resultado := public.guardar_bloqueo(r.fecha, 10, 12, false, null);
       if resultado->>'resultado' <> 'confirmacion' or not ((resultado->'citas') ? r.cita::text) or (select estado from public.citas where id = r.cita) <> 'confirmada' then raise exception 'Previsualización incorrecta: %', resultado; end if;
       select array_agg(value::uuid order by value::uuid) into ids from jsonb_array_elements_text(resultado->'citas');
+      perform set_config('request.jwt.claim.sub', r.cliente::text, true);
       perform public.solicitar_cita((r.fecha::timestamp + interval '11 hours') at time zone 'America/Montevideo', 'Espalda');
+      perform set_config('request.jwt.claim.sub', r.admin::text, true);
       resultado := public.guardar_bloqueo(r.fecha, 10, 12, true, ids);
       if resultado->>'resultado' <> 'confirmacion' or (select estado from public.citas where id = r.cita) <> 'confirmada' then raise exception 'Confirmación obsoleta alteró datos'; end if;
       select array_agg(value::uuid order by value::uuid) into ids from jsonb_array_elements_text(resultado->'citas');

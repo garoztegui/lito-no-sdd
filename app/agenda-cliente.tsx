@@ -1,0 +1,35 @@
+'use client';
+
+import { createBrowserClient } from '@supabase/ssr';
+import { useEffect, useState } from 'react';
+import Agenda from './agenda';
+import { conLimite } from './limite';
+
+export default function AgendaCliente({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
+  const [acceso, setAcceso] = useState<'cargando' | 'cliente' | 'administrador' | 'error'>('cargando');
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let vigente = true;
+    const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
+    async function consultar() {
+      setAcceso('cargando');
+      try {
+        const { data: { user }, error } = await conLimite(() => supabase.auth.getUser());
+        if (error || !user) throw new Error('Sin sesión');
+        const perfil = await conLimite(signal => supabase.from('perfiles').select('es_administrador').eq('id', user.id).abortSignal(signal).maybeSingle());
+        if (perfil.error || !perfil.data || typeof perfil.data.es_administrador !== 'boolean') throw new Error('Sin perfil');
+        if (vigente) setAcceso(perfil.data.es_administrador ? 'administrador' : 'cliente');
+      } catch {
+        if (vigente) setAcceso('error');
+      }
+    }
+    void consultar();
+    return () => { vigente = false; };
+  }, [version]);
+
+  if (acceso === 'cargando') return <p>Comprobando acceso a reservas...</p>;
+  if (acceso === 'error') return <section><p role="alert">No se pudo comprobar el acceso a reservas.</p><button type="button" onClick={() => setVersion(valor => valor + 1)}>Reintentar</button></section>;
+  if (acceso === 'administrador') return <p>Las cuentas de administrador no pueden reservar citas.</p>;
+  return <Agenda onSolicitudFinalizada={onSolicitudFinalizada} versionCitas={versionCitas} />;
+}

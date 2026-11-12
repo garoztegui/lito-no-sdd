@@ -20,7 +20,7 @@ async function cliente() {
 }
 
 function horarioFuturo() {
-  const fecha = new Date(Date.now() + (30 + randomInt(30)) * 86400000);
+  const fecha = new Date(Date.now() + (4 + randomInt(65)) * 86400000);
   while (fecha.getUTCDay() === 0 || fecha.getUTCDay() === 6) fecha.setUTCDate(fecha.getUTCDate() + 1);
   fecha.setUTCHours(10 + randomInt(12), 0, 0, 0);
   return fecha.toISOString();
@@ -52,13 +52,13 @@ test('un cliente puede solicitar una cita pendiente', async () => {
 test('proponer un horario disponible libera el anterior y ocupa el nuevo', async () => {
   const supabase = await cliente();
   const { data: { user } } = await supabase.auth.getUser();
-  execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
-    `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
 
   try {
     const original = await horarioLibre(supabase);
     const creada = await supabase.rpc('solicitar_cita', { inicio_cita: original, servicio_cita: 'Espalda' });
     assert.equal(creada.error, null);
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
+      `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
     const { data: cita, error: errorCita } = await supabase.from('citas').select('id').eq('inicio', original).single();
     assert.equal(errorCita, null);
 
@@ -86,12 +86,12 @@ test('proponer un horario disponible libera el anterior y ocupa el nuevo', async
 test('una solicitud vencida se cancela en vez de convertirse en propuesta', async () => {
   const supabase = await cliente();
   const { data: { user } } = await supabase.auth.getUser();
-  execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
-    `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
 
   try {
     const original = await horarioLibre(supabase);
     assert.equal((await supabase.rpc('solicitar_cita', { inicio_cita: original, servicio_cita: 'Espalda' })).error, null);
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
+      `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
     const { data: cita } = await supabase.from('citas').select('id').eq('inicio', original).single();
     const vencimiento = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString();
     execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
@@ -114,14 +114,14 @@ test('una solicitud vencida se cancela en vez de convertirse en propuesta', asyn
 test('una cita resuelta o un horario ocupado no se modifica', async () => {
   const supabase = await cliente();
   const { data: { user } } = await supabase.auth.getUser();
-  execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
-    `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
 
   try {
     const original = await horarioLibre(supabase);
     assert.equal((await supabase.rpc('solicitar_cita', { inicio_cita: original, servicio_cita: 'Espalda' })).error, null);
     const ocupado = await horarioLibre(supabase);
     assert.equal((await supabase.rpc('solicitar_cita', { inicio_cita: ocupado, servicio_cita: 'Cuerpo entero' })).error, null);
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
+      `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
     const { data: cita } = await supabase.from('citas').select('id').eq('inicio', original).single();
 
     const resultado = await supabase.rpc('proponer_horario_administrador', {
@@ -156,12 +156,12 @@ test('una cita resuelta o un horario ocupado no se modifica', async () => {
 test('una propuesta de horario aparece en la agenda administrativa', async () => {
   const supabase = await cliente();
   const { data: { user } } = await supabase.auth.getUser();
-  execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
-    `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
 
   try {
     const original = await horarioLibre(supabase);
     assert.equal((await supabase.rpc('solicitar_cita', { inicio_cita: original, servicio_cita: 'Espalda' })).error, null);
+    execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
+      `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
     const { data: cita } = await supabase.from('citas').select('id').eq('inicio', original).single();
     const propuesta = await horarioLibre(supabase);
     const resultado = await supabase.rpc('proponer_horario_administrador', {

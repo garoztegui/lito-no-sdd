@@ -1,7 +1,7 @@
 # Backlog
 
 1. Como cliente, quiero registrarme e iniciar sesión, para acceder a mi cuenta.
-2. Como cliente, quiero solicitar una cita en un horario disponible, para reservar una sesión. Requiere: #1.
+2. Como cliente, quiero solicitar una cita en un horario disponible, para reservar una sesión. Las cuentas administradoras no pueden reservar. Requiere: #1.
 3. Como cliente, quiero consultar mis solicitudes y citas, para conocer su estado. Requiere: #2.
 4. Como administrador, quiero consultar la agenda futura, para conocer las citas solicitadas y confirmadas. Requiere: #2.
 5. Como administrador, quiero aceptar o rechazar solicitudes, para gestionar las citas pendientes. Requiere: #2.

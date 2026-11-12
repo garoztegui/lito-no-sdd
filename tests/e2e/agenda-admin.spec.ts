@@ -19,6 +19,17 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
   try {
     sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() + interval '300 days', 'Espalda', 'confirmada' from auth.users where email = '${email}'`);
     await page.goto('/');
+    await expect(page.getByText('Las cuentas de administrador no pueden reservar citas.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Solicitar una cita' })).toHaveCount(0);
+    const perfilRoute = /\/rest\/v1\/perfiles(?:\?|$)/;
+    await page.route(perfilRoute, route => route.fulfill({ status: 400, body: '{}' }));
+    await page.reload();
+    await expect(page.getByText('No se pudo comprobar el acceso a reservas.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Solicitar una cita' })).toHaveCount(0);
+    await page.unroute(perfilRoute);
+    await page.getByRole('button', { name: 'Reintentar' }).click();
+    await expect(page.getByText('Las cuentas de administrador no pueden reservar citas.')).toBeVisible();
+    await page.reload();
     await page.getByRole('link', { name: 'Consultar agenda administrativa' }).click();
     await expect(page.getByRole('heading', { name: 'Agenda administrativa' })).toBeVisible();
     const cita = page.getByRole('listitem').filter({ hasText: email });
