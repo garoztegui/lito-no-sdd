@@ -20,6 +20,18 @@ test('las reservas se serializan con disponibilidad, bloqueos y cambios de servi
       create policy "Clientes solicitan citas" on public.citas for insert to authenticated with check (true);
       insert into public.perfiles values ('00000000-0000-0000-0000-000000000001', true);`);
     query(readFileSync('supabase/migrations/20261111195538_disponibilidad_semanal.sql', 'utf8'));
+    query(readFileSync('supabase/migrations/20261112231520_disponibilidad_solo_turnos_retirados.sql', 'utf8'));
+    assert.match(query(`begin;
+      select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
+      do $$ declare resultado jsonb; begin
+        resultado := public.guardar_disponibilidad_semanal('[]'::jsonb, false);
+        if resultado->>'resultado' <> 'guardada' or (select count(*) from private.disponibilidad_semanal) <> 0 then raise exception 'No guardó disponibilidad vacía'; end if;
+        resultado := public.guardar_disponibilidad_semanal('[{"dia":2,"hora":10},{"dia":2,"hora":11}]'::jsonb, false);
+        if resultado->>'resultado' <> 'guardada' or (select count(*) from private.disponibilidad_semanal) <> 2 then raise exception 'No agregó turnos'; end if;
+        resultado := public.guardar_disponibilidad_semanal('[{"dia":2,"hora":10}]'::jsonb, false);
+        if resultado->>'resultado' <> 'guardada' or (select count(*) from private.disponibilidad_semanal) <> 1 or not exists (select 1 from private.disponibilidad_semanal where dia=2 and hora=10) then raise exception 'No conservó el turno restante'; end if;
+      end $$;
+      rollback;`), /ROLLBACK/);
     const inicio = `(date_trunc('week', timezone('America/Montevideo', now())) + interval '21 days 7 hours') at time zone 'America/Montevideo'`;
     const admin = spawn('docker', ['exec', '-i', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', db, '-v', 'ON_ERROR_STOP=1', '-At'], { stdio: ['pipe', 'pipe', 'pipe'] });
     let salida = '';

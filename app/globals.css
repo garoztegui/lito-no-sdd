@@ -53,6 +53,34 @@ legend { margin-bottom: .75rem; font-weight: 600; }
 .servicios button { width: auto; }
 .datos-cliente { max-width: 48rem; margin-top: 2rem; overflow-wrap: anywhere; }
 .clientes-admin .mis-citas li { overflow-wrap: anywhere; }
+.lista-clientes { margin-top: 2rem; }
+.tabla-clientes-contenedor { max-width: 100%; overflow-x: auto; }
+.tabla-clientes { width: 100%; border-collapse: collapse; text-align: left; }
+.tabla-clientes th, .tabla-clientes td { padding: .75rem; border: 1px solid #55554a; white-space: nowrap; }
+.tabla-clientes th { background: #303029; }
+.tabla-clientes td { background: var(--panel); }
+.boton-citas-cliente { display: inline-block; min-width: 12rem; padding: .6rem 1rem; border-radius: .4rem; background: var(--acento); color: #16140a; font-weight: 700; text-align: center; text-decoration: none; }
 .acciones-historial { display: grid; gap: .75rem; margin-top: .75rem; }
 .acciones-historial form { padding: 1rem; }
 .acciones-historial textarea { width: 100%; min-height: 5rem; padding: .6rem .75rem; border: 1px solid #a6a69a; border-radius: .4rem; background: #11110f; color: var(--texto); font: inherit; }
+dialog { width: min(100% - 2rem, 30rem); padding: 1.5rem; border: 1px solid #a6a69a; border-radius: .75rem; background: var(--panel); color: var(--texto); }
+dialog::backdrop { background: rgb(0 0 0 / .75); }
+.botones-confirmacion { display: flex; gap: .75rem; }
+.menu-admin { display: grid; gap: .75rem; margin-top: 2rem; max-width: 30rem; }
+.menu-admin a { display: block; padding: .75rem 1rem; border-radius: .4rem; background: var(--acento); color: #16140a; font-weight: 700; text-align: center; text-decoration: none; }
+.calendario-admin, .reservas-dia { margin-top: 2rem; }
+.calendario-encabezado { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.calendario-encabezado h2 { text-align: center; text-transform: capitalize; }
+.calendario-grilla { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .25rem; text-align: center; }
+.calendario-grilla a { min-height: 3.5rem; padding: .25rem; border: 1px solid #a6a69a; border-radius: .35rem; text-decoration: none; font-weight: 700; }
+.calendario-grilla a span { display: block; font-size: .65rem; line-height: 1.1; overflow-wrap: anywhere; }
+.dia-con-reservas { background: #f5d34b; color: #16140a; }
+.dia-sin-reservas { background: #303029; color: #f7f6ef; }
+.calendario-grilla a[aria-current="date"] { outline: 3px solid #fff; outline-offset: -3px; }
+.tabla-reservas td:last-child { min-width: 15rem; white-space: normal; }
+.tabla-reservas form { padding: .5rem; margin-bottom: .5rem; }
+.tabla-reservas textarea { width: 100%; min-height: 4rem; font: inherit; }
+.menu-cliente { display: grid; gap: .75rem; max-width: 30rem; margin-top: 2rem; }
+.volver-menu { width: auto; margin-top: 2rem; }
+.configuracion-cliente { max-width: 38rem; margin-top: 2rem; }
+.configuracion-cliente form { margin-top: 1rem; }

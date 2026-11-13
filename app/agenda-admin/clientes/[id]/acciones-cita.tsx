@@ -1,9 +1,10 @@
 ﻿'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { gestionarCita } from './acciones';
 import SelectorHorario from '../../../selector-horario';
+import ConfirmarCancelacion from '../../../confirmar-cancelacion';
 
 type Accion = 'rechazar' | 'proponer' | 'cancelar';
 const mensajes: Record<string, string> = {
@@ -30,11 +31,11 @@ export default function AccionesCita({ clienteId, citaId, estado, futura }: { cl
   const [fechaPropuesta, setFechaPropuesta] = useState('');
   const [versionHorarios, setVersionHorarios] = useState(0);
   const [motivo, setMotivo] = useState('');
+  const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
   const pendiente = futura && estado === 'pendiente';
   const confirmada = futura && estado === 'confirmada';
 
-  async function ejecutar(event: FormEvent<HTMLFormElement>, accion: Accion) {
-    event.preventDefault();
+  async function ejecutar(accion: Accion) {
     if (ocupado) return;
     setOcupado(true);
     setMensaje('');
@@ -59,17 +60,18 @@ export default function AccionesCita({ clienteId, citaId, estado, futura }: { cl
   return <div className="acciones-historial">
     {mensaje && <p role={tipoMensaje}>{mensaje}</p>}
     {pendiente && <>
-      <form aria-label="Rechazar solicitud" onSubmit={event => void ejecutar(event, 'rechazar')}>
+      <form aria-label="Rechazar solicitud" onSubmit={event => { event.preventDefault(); void ejecutar('rechazar'); }}>
         <button type="submit" disabled={ocupado}>Rechazar solicitud</button>
       </form>
-      {!propuestaAbierta ? <button type="button" disabled={ocupado} onClick={() => setPropuestaAbierta(true)}>Proponer otro horario</button> : <form aria-label="Proponer horario" onSubmit={event => void ejecutar(event, 'proponer')}>
+      {!propuestaAbierta ? <button type="button" disabled={ocupado} onClick={() => setPropuestaAbierta(true)}>Proponer otro horario</button> : <form aria-label="Proponer horario" onSubmit={event => { event.preventDefault(); void ejecutar('proponer'); }}>
         <SelectorHorario key={versionHorarios} initialValue={fechaPropuesta} onChange={setHorario} disabled={ocupado} />
         <button type="submit" disabled={ocupado || !horario}>Confirmar propuesta</button>
       </form>}
     </>}
-    {confirmada && <form aria-label="Cancelar cita" onSubmit={event => void ejecutar(event, 'cancelar')}>
+    {confirmada && <form aria-label="Cancelar cita" onSubmit={event => { event.preventDefault(); setConfirmarCancelacion(true); }}>
       <label>Motivo de cancelación<textarea required value={motivo} onChange={event => setMotivo(event.target.value)} /></label>
       <button type="submit" disabled={ocupado}>Cancelar cita</button>
     </form>}
+    {confirmarCancelacion && <ConfirmarCancelacion mensaje="¿Estás seguro de cancelar la cita?" onNo={() => setConfirmarCancelacion(false)} onSi={() => { setConfirmarCancelacion(false); void ejecutar('cancelar'); }} />}
   </div>;
 }

@@ -3,11 +3,15 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState } from 'react';
 import Agenda from './agenda';
+import MisCitas from './mis-citas';
+import MenuAdmin from './menu-admin';
+import ConfiguracionCliente from './configuracion-cliente';
 import { conLimite } from './limite';
 
 export default function AgendaCliente({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
   const [acceso, setAcceso] = useState<'cargando' | 'cliente' | 'administrador' | 'error'>('cargando');
   const [version, setVersion] = useState(0);
+  const [seccion, setSeccion] = useState<'menu' | 'citas' | 'reserva' | 'configuracion'>('menu');
 
   useEffect(() => {
     let vigente = true;
@@ -30,6 +34,13 @@ export default function AgendaCliente({ onSolicitudFinalizada, versionCitas }: {
 
   if (acceso === 'cargando') return <p>Comprobando acceso a reservas...</p>;
   if (acceso === 'error') return <section><p role="alert">No se pudo comprobar el acceso a reservas.</p><button type="button" onClick={() => setVersion(valor => valor + 1)}>Reintentar</button></section>;
-  if (acceso === 'administrador') return <p>Las cuentas de administrador no pueden reservar citas.</p>;
-  return <Agenda onSolicitudFinalizada={onSolicitudFinalizada} versionCitas={versionCitas} />;
+  if (acceso === 'administrador') return <MenuAdmin />;
+  if (seccion === 'menu') return <nav className="menu-cliente" aria-label="Opciones de cliente">
+    <button type="button" onClick={() => setSeccion('citas')}>Mis citas</button>
+    <button type="button" onClick={() => setSeccion('reserva')}>Reservar cita</button>
+    <button type="button" onClick={() => setSeccion('configuracion')}>Configuración</button>
+  </nav>;
+  return <><button className="volver-menu" type="button" onClick={() => setSeccion('menu')}>Volver al menú</button>
+    {seccion === 'citas' ? <MisCitas version={versionCitas} onCancelacion={onSolicitudFinalizada} /> : seccion === 'reserva' ? <Agenda onSolicitudFinalizada={onSolicitudFinalizada} versionCitas={versionCitas} /> : <ConfiguracionCliente />}
+  </>;
 }

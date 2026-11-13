@@ -20,7 +20,7 @@ test('el administrador bloquea servicios con citas y borra servicios sin citas f
     await registro.getByRole('button', { name: 'Registrarse' }).click();
     await expect(registro.getByText('Cuenta creada.')).toBeVisible();
     sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${email}')`);
-    await page.goto('/agenda-admin');
+    await page.goto('/agenda-admin?seccion=servicios');
     const catalogo = page.getByRole('region', { name: 'Catálogo de servicios' });
     await catalogo.getByLabel('Nombre del nuevo servicio').fill(nombreActivo);
     await catalogo.getByRole('button', { name: 'Crear servicio' }).click();
@@ -36,6 +36,7 @@ test('el administrador bloquea servicios con citas y borra servicios sin citas f
     sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() - interval '1 day', '${nombrePasado}', 'confirmada' from auth.users where email = '${email}'`);
     const activo = catalogo.getByRole('listitem').filter({ hasText: `Nombre de ${nombreActivo}` });
     await activo.getByRole('button', { name: `Borrar servicio ${nombreActivo}` }).click();
+    await page.getByRole('dialog', { name: 'Confirmar eliminación' }).getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(catalogo.getByText('El servicio tiene citas futuras. Podés bloquearlo para impedir nuevas reservas.')).toBeVisible();
     await activo.getByRole('button', { name: `Bloquear servicio ${nombreActivo}` }).focus();
     await page.keyboard.press('Enter');
@@ -45,9 +46,10 @@ test('el administrador bloquea servicios con citas y borra servicios sin citas f
     await page.goto('/');
     await expect(page.getByRole('option', { name: nombrePasado })).toBeAttached();
     await expect(page.getByRole('option', { name: nombreActivo })).toHaveCount(0);
-    await page.goto('/agenda-admin');
+    await page.goto('/agenda-admin?seccion=servicios');
     const historico = catalogo.getByRole('listitem').filter({ hasText: `Nombre de ${nombrePasado}` });
     await historico.getByRole('button', { name: `Borrar servicio ${nombrePasado}` }).click();
+    await page.getByRole('dialog', { name: 'Confirmar eliminación' }).getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(catalogo.getByText('Servicio borrado.')).toBeVisible();
     await expect(catalogo.getByLabel(`Nombre de ${nombrePasado}`)).toHaveCount(0);
     expect(sql(`select count(*) from public.citas where cliente_id = (select id from auth.users where email = '${email}') and servicio = '${nombrePasado}' and servicio_id is null`)).toBe('1');

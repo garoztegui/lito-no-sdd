@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { enviarEventosCita, mensajeCita } from '../../app/notificaciones-citas.mjs';
+import { enviarEventosCita, mensajeCita, registrarFallosEmail } from '../../app/notificaciones-citas.mjs';
 
 const evento = { inicio: '2027-01-14T13:00:00Z', servicio: 'Espalda', nombre: 'Ana Ejemplo', motivo: 'Viaje' };
 
@@ -37,4 +37,13 @@ test('un fallo no impide el envío independiente a los demás destinatarios', as
   });
   assert.deepEqual(intentos.sort(), ['dos@example.test', 'uno@example.test']);
   assert.deepEqual(resultados.map(resultado => resultado.status), ['rejected', 'fulfilled']);
+});
+
+test('los errores de envío quedan registrados sin exponer destinatarios ni permitir reintentos', () => {
+  const mensajes = [];
+  registrarFallosEmail([
+    { status: 'fulfilled', value: {} },
+    { status: 'rejected', reason: { code: 'EENVELOPE', responseCode: 550, message: 'cliente@example.test' } },
+  ], (...datos) => mensajes.push(datos));
+  assert.deepEqual(mensajes, [['Falló el envío de un email de cita.', { code: 'EENVELOPE', responseCode: 550 }]]);
 });

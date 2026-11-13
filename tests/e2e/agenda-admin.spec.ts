@@ -19,7 +19,9 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
   try {
     sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() + interval '300 days', 'Espalda', 'confirmada' from auth.users where email = '${email}'`);
     await page.goto('/');
-    await expect(page.getByText('Las cuentas de administrador no pueden reservar citas.')).toBeVisible();
+    for (const nombre of ['Ver agenda', 'Listado de usuarios', 'Modificar horarios disponibles', 'Bloquear horarios', 'Administrar servicios']) await expect(page.getByRole('link', { name: nombre })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Mis citas' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Solicitar una cita' })).toHaveCount(0);
     const perfilRoute = /\/rest\/v1\/perfiles(?:\?|$)/;
     await page.route(perfilRoute, route => route.fulfill({ status: 400, body: '{}' }));
@@ -28,12 +30,16 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
     await expect(page.getByRole('heading', { name: 'Solicitar una cita' })).toHaveCount(0);
     await page.unroute(perfilRoute);
     await page.getByRole('button', { name: 'Reintentar' }).click();
-    await expect(page.getByText('Las cuentas de administrador no pueden reservar citas.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Ver agenda' })).toBeVisible();
     await page.reload();
-    await page.getByRole('link', { name: 'Consultar agenda administrativa' }).click();
+    for (const nombre of ['Ver agenda', 'Listado de usuarios', 'Modificar horarios disponibles', 'Bloquear horarios', 'Administrar servicios']) await expect(page.getByRole('link', { name: nombre })).toBeVisible();
+    await page.getByRole('link', { name: 'Ver agenda' }).click();
     await expect(page.getByRole('heading', { name: 'Agenda administrativa' })).toBeVisible();
-    const cita = page.getByRole('listitem').filter({ hasText: email });
-    for (const texto of ['Espalda', 'confirmada', 'Administrador Ejemplo', email, '099123456', 'Hombre', 'Montevideo']) {
+    const fechaCita = sql(`select to_char(inicio at time zone 'America/Montevideo', 'YYYY-MM-DD') from public.citas where cliente_id = (select id from auth.users where email = '${email}')`).toString().split('\n').map(linea => linea.trim()).find(linea => /^\d{4}-\d{2}-\d{2}$/.test(linea));
+    expect(fechaCita).toBeTruthy();
+    await page.goto(`/agenda-admin?seccion=agenda&mes=${fechaCita!.slice(0, 7)}&dia=${fechaCita}`);
+    const cita = page.getByRole('row').filter({ hasText: email });
+    for (const texto of ['Espalda', 'confirmada', 'Administrador Ejemplo', email, '099123456', 'Hombre']) {
       await expect(cita).toContainText(texto);
     }
   } finally {
@@ -97,8 +103,8 @@ test('el administrador puede proponer otro horario para una solicitud pendiente'
   sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, '${horarioOcupado}', 'Cuerpo entero', 'confirmada' from auth.users where email = '${email}'`);
 
   try {
-    await page.goto('/agenda-admin');
-    const cita = page.getByRole('listitem').filter({ hasText: email }).filter({ hasText: 'Estado: pendiente' });
+    await page.goto(`/agenda-admin?seccion=agenda&mes=${inicio.toISOString().slice(0, 7)}&dia=${inicio.toISOString().slice(0, 10)}`);
+    const cita = page.getByRole('row').filter({ hasText: email }).filter({ hasText: 'pendiente' });
     await cita.getByRole('button', { name: 'Proponer otro horario' }).click();
     await cita.getByLabel('Fecha').fill(horarioOcupado.slice(0, 10));
     await expect(cita.getByRole('button', { name: '10:00 Ocupado' })).toBeDisabled();
@@ -114,16 +120,23 @@ test('el administrador puede proponer otro horario para una solicitud pendiente'
     await cita.getByRole('button', { name: '10:00 Disponible' }).click();
     await cita.getByRole('button', { name: 'Confirmar propuesta' }).click();
     await expect(page.getByRole('status')).toHaveText('Propuesta de horario registrada.');
-    const citaPropuesta = page.getByRole('listitem').filter({ hasText: email }).filter({ hasText: 'Estado: propuesta' });
+    await page.goto(`/agenda-admin?seccion=agenda&mes=${fechaPropuesta.slice(0, 7)}&dia=${fechaPropuesta.slice(0, 10)}`);
+    const citaPropuesta = page.getByRole('row').filter({ hasText: email }).filter({ hasText: 'propuesta' });
     await expect(citaPropuesta).toContainText('propuesta');
     const inicioMostrado = await citaPropuesta.locator('time').getAttribute('datetime');
     expect(Date.parse(inicioMostrado ?? '')).toBe(Date.parse(fechaPropuesta));
 
+    sql(`update public.perfiles set es_administrador = false where id = (select id from auth.users where email = '${email}')`);
     await page.goto('/');
     const misCitas = page.getByRole('region', { name: 'Mis citas' });
     const propuestaCliente = misCitas.getByRole('listitem').filter({ hasText: 'Propuesta' });
     await expect(propuestaCliente).toContainText('Espalda');
     await propuestaCliente.getByRole('button', { name: 'Rechazar propuesta' }).click();
+    const confirmacion = page.getByRole('dialog', { name: 'Confirmar cancelación' });
+    await confirmacion.getByRole('button', { name: 'No', exact: true }).click();
+    await expect(propuestaCliente).toContainText('Propuesta');
+    await propuestaCliente.getByRole('button', { name: 'Rechazar propuesta' }).click();
+    await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(misCitas.getByRole('status')).toHaveText('La cita quedó cancelada.');
     await expect(misCitas.getByRole('listitem').filter({ hasText: 'Espalda' })).toContainText('Cancelada');
     expect(sql(`select estado from public.citas where inicio = '${fechaPropuesta}' and cliente_id = (select id from auth.users where email = '${email}')`).trim()).toBe('cancelada');

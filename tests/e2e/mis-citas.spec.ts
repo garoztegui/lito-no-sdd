@@ -123,6 +123,11 @@ test('el cliente cancela su solicitud y el horario vuelve a estar disponible', a
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await citas.getByRole('button', { name: 'Cancelar cita' }).focus();
   await page.keyboard.press('Enter');
+  const confirmacion = page.getByRole('dialog', { name: 'Confirmar cancelación' });
+  await confirmacion.getByRole('button', { name: 'No', exact: true }).click();
+  await expect(citas.getByRole('listitem')).toContainText('Pendiente');
+  await citas.getByRole('button', { name: 'Cancelar cita' }).click();
+  await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
   await expect(citas.getByRole('status')).toHaveText('La cita quedó cancelada.');
   await expect(citas.getByRole('listitem')).toContainText('Cancelada');
   await expect(page.getByRole('button', { name: `${hora} Disponible` })).toBeEnabled();
@@ -138,6 +143,7 @@ test('una cita confirmada dentro del límite informa que no puede cancelarse', a
   await page.reload();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await citas.getByRole('button', { name: 'Cancelar cita' }).click();
+  await page.getByRole('dialog', { name: 'Confirmar cancelación' }).getByRole('button', { name: 'Sí', exact: true }).click();
   await expect(citas.getByRole('status')).toHaveText('Ya no podés cancelar esta cita: faltan 24 horas o menos.');
   await expect(citas.getByRole('listitem')).toContainText('Confirmada');
 });

@@ -28,16 +28,16 @@ test('el administrador revisa y confirma una reducción de disponibilidad', asyn
         await route.fulfill({ json: { resultado: 'guardada' } });
       }
     });
-    await page.goto('/agenda-admin');
+    await page.goto('/agenda-admin?seccion=disponibilidad');
     const lunes = page.getByRole('group', { name: 'Lunes' });
     await expect(lunes.getByLabel('07:00')).toBeChecked();
     await lunes.getByLabel('07:00').uncheck();
     await page.getByRole('button', { name: 'Guardar disponibilidad' }).click();
-    await expect(page.getByText('Hay 1 citas afectadas. ¿Querés cancelarlas y guardar la disponibilidad?')).toBeVisible();
-    await page.getByRole('button', { name: 'No guardar' }).click();
+    await expect(page.getByRole('dialog')).toContainText('Hay 1 citas afectadas.');
+    await page.getByRole('dialog').getByRole('button', { name: 'No', exact: true }).click();
     await expect(page.getByText('No se realizaron cambios.')).toBeVisible();
     await page.getByRole('button', { name: 'Guardar disponibilidad' }).click();
-    await page.getByRole('button', { name: 'Cancelar citas y guardar' }).focus();
+    await page.getByRole('dialog').getByRole('button', { name: 'Sí', exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(page.getByText('Disponibilidad guardada.')).toBeVisible();
     expect(llamadas).toBe(3);

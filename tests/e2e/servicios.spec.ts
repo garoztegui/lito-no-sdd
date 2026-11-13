@@ -20,7 +20,7 @@ test('el administrador crea y renombra un servicio disponible para reservas', as
     await registro.getByRole('button', { name: 'Registrarse' }).click();
     await expect(registro.getByText('Cuenta creada.')).toBeVisible();
     sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${email}')`);
-    await page.goto('/agenda-admin');
+    await page.goto('/agenda-admin?seccion=servicios');
     const catalogo = page.getByRole('region', { name: 'Catálogo de servicios' });
     await catalogo.getByLabel('Nombre del nuevo servicio').fill(nombre);
     await catalogo.getByRole('button', { name: 'Crear servicio' }).focus();
@@ -38,7 +38,7 @@ test('el administrador crea y renombra un servicio disponible para reservas', as
     await page.getByRole('button', { name: /Disponible$/ }).first().click();
     await page.getByRole('button', { name: 'Solicitar cita' }).click();
     await expect(page.getByText('Solicitud enviada. Tu cita está pendiente.')).toBeVisible();
-    await page.goto('/agenda-admin');
+    await page.goto('/agenda-admin?seccion=servicios');
     const fila = catalogo.getByRole('listitem').filter({ hasText: `Nombre de ${nombre}` });
     await fila.getByLabel(`Nombre de ${nombre}`).fill('Espalda');
     await fila.getByRole('button', { name: 'Guardar nombre' }).click();

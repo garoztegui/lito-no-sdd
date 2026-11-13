@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState } from 'react';
+import ConfirmarCancelacion from '../confirmar-cancelacion';
 
 type Turno = { dia: number; hora: number };
 type Resultado = { resultado: string; citas?: string[]; cantidad?: number };
@@ -68,11 +69,8 @@ export default function Disponibilidad() {
         </label>)}</div>
       </fieldset>)}
       <button type="button" disabled={ocupado} onClick={() => guardar()}>Guardar disponibilidad</button>
-      {confirmacion && <div role="alert">
-        <p>Hay {confirmacion.cantidad} citas afectadas. ¿Querés cancelarlas y guardar la disponibilidad?</p>
-        <button type="button" disabled={ocupado} onClick={() => guardar(true)}>Cancelar citas y guardar</button>
-        <button type="button" disabled={ocupado} onClick={() => { setConfirmacion(null); setMensaje('No se realizaron cambios.'); }}>No guardar</button>
-      </div>}
+      {confirmacion && <ConfirmarCancelacion mensaje={`Hay ${confirmacion.cantidad} citas afectadas. ¿Estás seguro de cancelarlas y guardar la disponibilidad?`}
+        onSi={() => { setConfirmacion(null); void guardar(true); }} onNo={() => { setConfirmacion(null); setMensaje('No se realizaron cambios.'); }} />}
     </>}
   </section>;
 }

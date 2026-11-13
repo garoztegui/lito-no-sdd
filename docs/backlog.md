@@ -19,3 +19,4 @@
 17. Como cliente y administrador, queremos recibir un email al solicitar una cita, para conocer su día, hora, servicio y estado pendiente; el administrador también recibe la identidad del cliente. Requiere: #2.
 18. Como cliente, quiero recibir un email cuando el administrador acepte mi cita o proponga otro horario, para conocer la decisión y, ante una propuesta, el nuevo horario y cómo aceptarla o rechazarla desde la aplicación. Requiere: #5 y #6.
 19. Como cliente, quiero recibir un email cuando el administrador cancele mi cita, para conocer la cancelación y su motivo. Requiere: #15.
+20. [x] Como cliente, quiero navegar entre mis citas, las reservas y la configuración de mi cuenta, para gestionar mis datos y encontrar mis citas. Requiere: #1, #2 y #3.

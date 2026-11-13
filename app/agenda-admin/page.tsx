@@ -5,6 +5,8 @@ import ProponerHorario from './proponer-horario';
 import Disponibilidad from './disponibilidad';
 import Bloqueos from './bloqueos';
 import Servicios from './servicios';
+import MenuAdmin from '../menu-admin';
+import CancelarCita from './cancelar-cita';
 
 const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', dateStyle: 'long', timeStyle: 'short', hourCycle: 'h23',
@@ -22,7 +24,7 @@ const mensajes: Record<string, string> = {
   error: 'No se pudo actualizar la solicitud. Intentá nuevamente.',
 };
 
-export default async function AgendaAdmin({ searchParams }: { searchParams: Promise<{ resultado?: string; citaId?: string; nuevoInicioLocal?: string }> }) {
+export default async function AgendaAdmin({ searchParams }: { searchParams: Promise<{ seccion?: string; resultado?: string; citaId?: string; nuevoInicioLocal?: string; mes?: string; dia?: string }> }) {
   const parametros = await searchParams;
   const almacenamiento = await cookies();
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
@@ -35,6 +37,15 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
   if (errorPerfil) return <main className="container"><h1>Agenda administrativa</h1><p role="alert">No se pudo comprobar el acceso. Intentá nuevamente.</p><a href="/agenda-admin">Reintentar</a></main>;
   if (!perfil?.es_administrador) return <main className="container"><h1>Agenda administrativa</h1><p>No tenés acceso a esta agenda.</p><a href="/">Volver al inicio</a></main>;
 
+  const seccion = parametros.seccion ?? (parametros.resultado ? 'agenda' : '');
+  if (!seccion) return <main className="container"><h1>Administración</h1><a href="/">Volver al inicio</a>
+    <MenuAdmin />
+  </main>;
+
+  if (seccion !== 'agenda') return <main className="container"><h1>Administración</h1><a href="/agenda-admin">Volver a administración</a>
+    {seccion === 'servicios' ? <Servicios /> : seccion === 'bloqueos' ? <Bloqueos /> : seccion === 'disponibilidad' ? <Disponibilidad /> : <p>Sección no disponible.</p>}
+  </main>;
+
   const citas: Cita[] = [];
   let error = false;
   const porPagina = 500;
@@ -44,24 +55,47 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
     citas.push(...(resultado.data ?? []));
     if ((resultado.data ?? []).length < porPagina) break;
   }
-  return <main className="container"><h1>Agenda administrativa</h1><a href="/">Volver al inicio</a>
-    <p><a href="/agenda-admin/clientes">Consultar clientes e historial</a></p>
-    <Servicios />
-    <Bloqueos />
-    <Disponibilidad />
+  const hoy = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Montevideo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  const mes = typeof parametros.mes === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(parametros.mes) && Number(parametros.mes.slice(0, 4)) >= 1000 ? parametros.mes : hoy.slice(0, 7);
+  const [anio, numeroMes] = mes.split('-').map(Number);
+  const diasMes = new Date(Date.UTC(anio, numeroMes, 0)).getUTCDate();
+  const dia = typeof parametros.dia === 'string' && parametros.dia.startsWith(`${mes}-`) && /^\d{4}-\d{2}-\d{2}$/.test(parametros.dia) && Number(parametros.dia.slice(8)) >= 1 && Number(parametros.dia.slice(8)) <= diasMes ? parametros.dia : '';
+  const fechaCita = (inicio: string) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Montevideo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(inicio));
+  const diasConCitas = new Set(citas.map(cita => fechaCita(cita.inicio)));
+  const citasDia = citas.filter(cita => fechaCita(cita.inicio) === dia).sort((a, b) => Date.parse(a.inicio) - Date.parse(b.inicio));
+  const mesRelativo = (desplazamiento: number) => new Date(Date.UTC(anio, numeroMes - 1 + desplazamiento, 1)).toISOString().slice(0, 7);
+  const primerDia = (new Date(Date.UTC(anio, numeroMes - 1, 1)).getUTCDay() + 6) % 7;
+  const tituloMes = new Intl.DateTimeFormat('es-UY', { timeZone: 'UTC', month: 'long', year: 'numeric' }).format(new Date(Date.UTC(anio, numeroMes - 1, 1)));
+  return <main className="container"><h1>Agenda administrativa</h1><a href="/agenda-admin">Volver a administración</a>
     {parametros.resultado && parametros.resultado !== 'horario_ocupado' && mensajes[parametros.resultado] && <p role="status">{mensajes[parametros.resultado]}</p>}
-    <section className="mis-citas" aria-label="Citas futuras">
-      {error ? <><p role="alert">No se pudo cargar la agenda. Intentá nuevamente.</p><a href="/agenda-admin">Reintentar</a></> :
-        citas.length === 0 ? <p>No hay citas futuras.</p> : <ul>{citas.map(cita => <li key={`${cita.inicio}-${cita.email}`}>
-          <h2>{cita.servicio}</h2><p><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time> (Montevideo)</p>
-          <p>Estado: {cita.estado}</p><p>Nombre completo: {cita.nombre}</p><p>Email: {cita.email}</p><p>Teléfono: {cita.telefono}</p><p>Sexo: {cita.sexo}</p>
-          {cita.estado === 'pendiente' && <div className="acciones-cita">
-            <form action={aceptarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><button type="submit">Aceptar solicitud</button></form>
-            <form action={rechazarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><button type="submit">Rechazar solicitud</button></form>
-            <ProponerHorario key={`${cita.id}:${parametros.citaId === cita.id && parametros.resultado === 'horario_ocupado' ? Date.now() : ''}`} citaId={cita.id} fechaAnterior={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined}
-              error={parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id ? mensajes.horario_ocupado : undefined} />
-          </div>}
-        </li>)}</ul>}
-    </section>
+    {error ? <><p role="alert">No se pudo cargar la agenda. Intentá nuevamente.</p><a href="/agenda-admin?seccion=agenda">Reintentar</a></> : <>
+      <section className="calendario-admin" aria-label="Calendario mensual">
+        <div className="calendario-encabezado"><a href={`/agenda-admin?seccion=agenda&mes=${mesRelativo(-1)}`}>Mes anterior</a><h2>{tituloMes}</h2><a href={`/agenda-admin?seccion=agenda&mes=${mesRelativo(1)}`}>Mes siguiente</a></div>
+        <p>Los días indican si tienen reservas futuras activas. Horarios de Montevideo.</p>
+        <div className="calendario-grilla">{['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(nombre => <strong key={nombre}>{nombre}</strong>)}
+          {Array.from({ length: primerDia }, (_, indice) => <span key={`vacio-${indice}`} />)}
+          {Array.from({ length: diasMes }, (_, indice) => {
+            const fecha = `${mes}-${String(indice + 1).padStart(2, '0')}`;
+            const ocupado = diasConCitas.has(fecha);
+            return <a key={fecha} className={ocupado ? 'dia-con-reservas' : 'dia-sin-reservas'} href={`/agenda-admin?seccion=agenda&mes=${mes}&dia=${fecha}`} aria-label={`${fecha}, ${ocupado ? 'con reservas' : 'sin reservas'}`} aria-current={dia === fecha ? 'date' : undefined}>{indice + 1}<span>{ocupado ? 'Con reservas' : 'Sin reservas'}</span></a>;
+          })}
+        </div>
+      </section>
+      {dia && <section className="reservas-dia" aria-label="Reservas del día"><h2>Reservas del {dia}</h2>
+        {citasDia.length === 0 ? <p>No hay reservas para este día.</p> : <div className="tabla-clientes-contenedor" tabIndex={0} role="region" aria-label="Desplazar tabla de reservas">
+          <table className="tabla-clientes tabla-reservas" aria-label="Reservas del día"><thead><tr><th scope="col">Hora</th><th scope="col">Servicio</th><th scope="col">Estado</th><th scope="col">Nombre completo</th><th scope="col">Email</th><th scope="col">Teléfono</th><th scope="col">Sexo</th><th scope="col">Acciones</th></tr></thead>
+            <tbody>{citasDia.map(cita => <tr key={cita.id}><td><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time></td><td>{cita.servicio}</td><td>{cita.estado}</td><td>{cita.nombre}</td><td>{cita.email}</td><td>{cita.telefono}</td><td>{cita.sexo}</td><td>
+              {cita.estado === 'pendiente' && <div className="acciones-agenda">
+                <form action={aceptarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><input type="hidden" name="diaAgenda" value={dia} /><button type="submit">Aceptar solicitud</button></form>
+                <form action={rechazarSolicitud}><input type="hidden" name="citaId" value={cita.id} /><input type="hidden" name="diaAgenda" value={dia} /><button type="submit">Rechazar solicitud</button></form>
+                <ProponerHorario key={`${cita.id}:${parametros.citaId === cita.id && parametros.resultado === 'horario_ocupado' ? Date.now() : ''}`} citaId={cita.id} diaAgenda={dia} fechaAnterior={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined} error={parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id ? mensajes.horario_ocupado : undefined} />
+              </div>}
+              {cita.estado === 'confirmada' && <CancelarCita citaId={cita.id} />}
+              {cita.estado === 'propuesta' && 'Esperando respuesta del cliente'}
+            </td></tr>)}</tbody>
+          </table>
+        </div>}
+      </section>}
+    </>}
   </main>;
 }

@@ -3,6 +3,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState } from 'react';
 import { conLimite } from './limite';
+import ConfirmarCancelacion from './confirmar-cancelacion';
 
 type Cita = { id: string; inicio: string; servicio: string; estado: string };
 const formato = new Intl.DateTimeFormat('es-UY', {
@@ -16,6 +17,8 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
   const [ahora, setAhora] = useState<number | null>(null);
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [respondiendo, setRespondiendo] = useState(false);
+  const [confirmacion, setConfirmacion] = useState<{ id: string; rechazo: boolean } | null>(null);
+  const [filtro, setFiltro] = useState('todos');
 
   async function cancelar(citaId: string) {
     setRespondiendo(true);
@@ -96,26 +99,34 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
     return () => clearTimeout(temporizador);
   }, [citas, ahora]);
 
+  const estadoVisible = (cita: Cita) => ahora !== null && (cita.estado === 'pendiente' || cita.estado === 'propuesta')
+    && Date.parse(cita.inicio) <= ahora + 24 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
+  const citasFiltradas = citas.filter(cita => filtro === 'todos' || estadoVisible(cita) === filtro);
+
   return <section className="mis-citas" aria-labelledby="titulo-mis-citas">
     <h2 id="titulo-mis-citas">Mis citas</h2>
+    <label>Filtrar por estado<select value={filtro} onChange={event => setFiltro(event.target.value)}>
+      <option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="confirmada">Confirmada</option><option value="propuesta">Propuesta</option><option value="cancelada">Cancelada</option><option value="rechazada">Rechazada</option>
+    </select></label>
     {respuesta && <p role="status">{respuesta}</p>}
     {estado === 'cargando' ? <p role="status">Cargando tus citas...</p> :
       estado === 'error' ? <><p role="alert">No se pudieron cargar tus citas.</p><button type="button" aria-label="Reintentar cargar mis citas" onClick={() => setIntento(valor => valor + 1)}>Reintentar</button></> :
-      citas.length === 0 ? <p>Todavía no tenés citas.</p> :
-      <ul>{citas.map(cita => {
-        const estadoVisible = ahora !== null && (cita.estado === 'pendiente' || cita.estado === 'propuesta')
-          && Date.parse(cita.inicio) <= ahora + 24 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
+      citas.length === 0 ? <p>Todavía no tenés citas.</p> : citasFiltradas.length === 0 ? <p>No hay citas con este estado.</p> :
+      <ul>{citasFiltradas.map(cita => {
+        const estadoActual = estadoVisible(cita);
         return <li key={cita.id}>
           <h3>{cita.servicio}</h3>
           <p><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time> (Montevideo)</p>
-          <p>Estado: <strong>{estadoVisible.charAt(0).toUpperCase() + estadoVisible.slice(1)}</strong></p>
-          {(estadoVisible === 'pendiente' || estadoVisible === 'confirmada') && ahora !== null && Date.parse(cita.inicio) > ahora &&
-            <button type="button" disabled={respondiendo} onClick={() => cancelar(cita.id)}>Cancelar cita</button>}
-          {estadoVisible === 'propuesta' && <div className="acciones-cita">
+          <p>Estado: <strong>{estadoActual.charAt(0).toUpperCase() + estadoActual.slice(1)}</strong></p>
+          {(estadoActual === 'pendiente' || estadoActual === 'confirmada') && ahora !== null && Date.parse(cita.inicio) > ahora &&
+            <button type="button" disabled={respondiendo} onClick={() => setConfirmacion({ id: cita.id, rechazo: false })}>Cancelar cita</button>}
+          {estadoActual === 'propuesta' && <div className="acciones-cita">
             <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'aceptar')}>Aceptar propuesta</button>
-            <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'rechazar')}>Rechazar propuesta</button>
+            <button type="button" disabled={respondiendo} onClick={() => setConfirmacion({ id: cita.id, rechazo: true })}>Rechazar propuesta</button>
           </div>}
         </li>;
       })}</ul>}
+    {confirmacion && <ConfirmarCancelacion mensaje={confirmacion.rechazo ? '¿Estás seguro de rechazar la propuesta y cancelar la cita?' : '¿Estás seguro de cancelar la cita?'}
+      onNo={() => setConfirmacion(null)} onSi={() => { const { id, rechazo } = confirmacion; setConfirmacion(null); void (rechazo ? responder(id, 'rechazar') : cancelar(id)); }} />}
   </section>;
 }

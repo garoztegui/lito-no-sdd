@@ -50,10 +50,16 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
     await expect(filas.filter({ hasText: 'Estado: propuesta' })).toHaveCount(2);
     await confirmada.getByLabel('Motivo de cancelación').fill('  Motivo de prueba  ');
     await confirmada.getByRole('button', { name: 'Cancelar cita' }).click();
+    const confirmacion = page.getByRole('dialog', { name: 'Confirmar cancelación' });
+    await confirmacion.getByRole('button', { name: 'No', exact: true }).click();
+    await expect(confirmada).toContainText('Estado: confirmada');
+    await confirmada.getByRole('button', { name: 'Cancelar cita' }).click();
+    await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(filas.filter({ hasText: 'Masaje deportivo' })).toContainText('Estado: cancelada');
     const cerca = filas.filter({ hasText: 'Cuerpo entero' }).filter({ hasText: 'Estado: confirmada' });
     await cerca.getByLabel('Motivo de cancelación').fill('Motivo');
     await cerca.getByRole('button', { name: 'Cancelar cita' }).click();
+    await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(cerca.getByRole('alert')).toContainText('24 horas o menos');
     expect(sql(`select estado || ':' || motivo_cancelacion from public.citas where cliente_id='${cliente}' and servicio='Masaje deportivo'`)).toBe('cancelada:Motivo de prueba');
     expect(sql(`select count(*) from public.citas where inicio='${dia} 10:00 America/Montevideo' and estado in ('pendiente','confirmada','propuesta')`)).toBe('0');

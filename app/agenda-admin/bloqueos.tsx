@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { consultarBloqueos, registrarBloqueo, quitarBloqueo } from './bloqueos-actions';
+import ConfirmarCancelacion from '../confirmar-cancelacion';
 
 type Bloqueo = { id: string; fecha: string; hora_inicio: number; hora_fin: number };
 type Resultado = { resultado: string; citas?: string[]; cantidad?: number };
@@ -78,11 +79,9 @@ export default function Bloqueos() {
       <button type="submit" disabled={ocupado}>Bloquear horario</button>
     </form>
     {mensaje && <p role="status">{mensaje}</p>}
-    {confirmacion && <div role="alert">
-      <p>Hay {confirmacion.cantidad} citas afectadas. ¿Querés cancelarlas y guardar el bloqueo?</p>
-      <button type="button" disabled={ocupado} onClick={() => void guardar(confirmacion.citas ?? [])}>Cancelar citas y bloquear</button>
-      <button type="button" disabled={ocupado} onClick={() => { setConfirmacion(null); setMensaje('No se realizaron cambios.'); }}>No bloquear</button>
-    </div>}
+    {confirmacion && <ConfirmarCancelacion mensaje={`Hay ${confirmacion.cantidad} citas afectadas. ¿Estás seguro de cancelarlas y guardar el bloqueo?`}
+      onSi={() => { const citas = confirmacion.citas ?? []; setConfirmacion(null); void guardar(citas); }}
+      onNo={() => { setConfirmacion(null); setMensaje('No se realizaron cambios.'); }} />}
     <h3>Bloqueos registrados</h3>
     {bloqueos === null ? <p>{mensaje ? 'No se pudo cargar la lista.' : 'Cargando bloqueos...'}</p> : bloqueos.length === 0 ? <p>No hay bloqueos registrados.</p> :
       <ul>{bloqueos.map(b => <li key={b.id}>

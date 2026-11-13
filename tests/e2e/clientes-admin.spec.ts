@@ -61,11 +61,12 @@ test('solo el administrador consulta datos e historial completo de clientes', as
     await registrar(page, adminEmail);
     sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${adminEmail}')`);
     await page.goto('/agenda-admin');
-    await page.getByRole('link', { name: 'Consultar clientes e historial' }).focus();
+    await page.getByRole('link', { name: 'Listado de usuarios' }).focus();
     await page.keyboard.press('Enter');
     const lista = page.getByRole('region', { name: 'Lista de clientes' });
-    await expect(lista.getByRole('link', { name: 'Cliente Historia Trece' })).toBeVisible();
-    await lista.getByRole('link', { name: 'Cliente Historia Trece' }).click();
+    const filaCliente = lista.getByRole('row').filter({ hasText: 'Cliente Historia Trece' });
+    await expect(filaCliente).toBeVisible();
+    await filaCliente.getByRole('link', { name: 'Ver citas del usuario' }).click();
     const datos = page.getByRole('region', { name: 'Datos del cliente' });
     for (const texto of ['Cliente Historia Trece', clienteEmail, '099111222', 'Mujer']) await expect(datos).toContainText(texto);
     const historial = page.getByRole('region', { name: 'Historial de citas' });
@@ -87,8 +88,8 @@ test('solo el administrador consulta datos e historial completo de clientes', as
         jsonb_build_object('nombre', 'ZZ Cliente ' || lpad(n::text, 4, '0'), 'telefono', '099555555', 'sexo', 'Mujer')
       from generate_series(1, 501) n`);
     await page.getByRole('link', { name: 'Volver a clientes' }).click();
-    await expect(page.getByRole('link', { name: 'ZZ Cliente 0501' })).toBeVisible();
-    await page.getByRole('link', { name: 'Cliente Sin Citas' }).click();
+    await expect(page.getByRole('row').filter({ hasText: 'ZZ Cliente 0501' })).toBeVisible();
+    await page.getByRole('row').filter({ hasText: 'Cliente Sin Citas' }).getByRole('link', { name: 'Ver citas del usuario' }).click();
     await expect(page.getByText('Este cliente no tiene citas.')).toBeVisible();
   } finally {
     await contextoCliente.close();
