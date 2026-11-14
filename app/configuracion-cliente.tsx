@@ -40,6 +40,7 @@ export default function ConfiguracionCliente() {
       const { data, error } = await supabase.from('perfiles').update({ nombre: perfil.nombre.trim(), telefono: perfil.telefono.trim(), sexo: perfil.sexo }).eq('id', id).select('id').maybeSingle();
       if (error || !data) throw new Error('No se actualizó');
       setMensaje('Datos actualizados.');
+      window.dispatchEvent(new Event('perfil-actualizado'));
     } catch { setMensaje('No se pudieron guardar tus datos. Intentá nuevamente.'); }
     finally { setOcupado(false); }
   }

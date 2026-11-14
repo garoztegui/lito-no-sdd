@@ -41,6 +41,7 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
     const rechazo = filas.filter({ hasText: 'Cuerpo entero' }).filter({ hasText: 'Estado: pendiente' });
     await rechazo.getByRole('button', { name: 'Rechazar solicitud' }).focus();
     await page.keyboard.press('Enter');
+    await page.getByRole('dialog', { name: 'Confirmar rechazo' }).getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(filas.filter({ hasText: 'Cuerpo entero' }).filter({ hasText: 'Estado: rechazada' })).toBeVisible();
     const pendiente = filas.filter({ hasText: 'Espalda' }).filter({ hasText: 'Estado: pendiente' });
     await pendiente.getByRole('button', { name: 'Proponer otro horario' }).click();

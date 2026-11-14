@@ -15,7 +15,7 @@ export default async function Clientes() {
   for (let desde = 0; ; desde += porPagina) {
     const resultado = await acceso.supabase.rpc('clientes_administrador', { p_cliente_id: null }).range(desde, desde + porPagina - 1);
     if (resultado.error) { error = true; break; }
-    clientes.push(...(resultado.data ?? []));
+    clientes.push(...(resultado.data ?? []).filter((cliente: Cliente) => cliente.id !== acceso.usuarioId));
     if ((resultado.data ?? []).length < porPagina) break;
   }
   clientes.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es-UY', { sensitivity: 'base' }) || a.id.localeCompare(b.id));

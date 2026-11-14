@@ -61,6 +61,7 @@ test('la agenda ofrece los horarios configurados para el día elegido', async ({
     await page.route(/\/rest\/v1\/rpc\/disponibilidad_semanal(?:\?|$)/, route => route.fulfill({ json: [{ dia: 6, hora: 14 }] }));
     await page.route(/\/rest\/v1\/rpc\/horarios_ocupados(?:\?|$)/, route => route.fulfill({ json: [] }));
     await page.reload();
+    await page.getByRole('button', { name: 'Reservar cita' }).click();
     const sabado = new Date(Date.now() + 35 * 86400000);
     while (sabado.getUTCDay() !== 6) sabado.setUTCDate(sabado.getUTCDate() + 1);
     await page.getByLabel('Fecha').fill(sabado.toISOString().slice(0, 10));

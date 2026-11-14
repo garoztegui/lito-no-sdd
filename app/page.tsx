@@ -1,7 +1,7 @@
 'use client';
 
 import { createBrowserClient } from '@supabase/ssr';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import AgendaCliente from './agenda-cliente';
 import { enviarEmailBienvenida } from './bienvenida-actions';
 
@@ -20,10 +20,7 @@ export default function Home() {
   const [errorIngreso, setErrorIngreso] = useState('');
   const [registrando, setRegistrando] = useState(false);
   const [ingresando, setIngresando] = useState(false);
-  const [cerrando, setCerrando] = useState(false);
-  const [errorCierre, setErrorCierre] = useState('');
   const [versionCitas, setVersionCitas] = useState(0);
-  const cierreLocal = useRef(false);
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -33,45 +30,14 @@ export default function Home() {
     supabase.auth.getUser().then(({ data }) => setEmailUsuario(data.user?.email ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange(event => {
       if (event === 'SIGNED_OUT') {
-        cierreLocal.current = true;
         setEmailUsuario(null);
       }
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  async function cerrarSesion() {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    );
-    setCerrando(true);
-    setErrorCierre('');
-    cierreLocal.current = false;
-    const informarError = () => setErrorCierre(cierreLocal.current
-      ? 'Se cerró la sesión en este dispositivo, pero no se pudo confirmar el cierre en el servidor.'
-      : 'No se pudo cerrar la sesión. Intentá nuevamente.');
-    let temporizador: ReturnType<typeof setTimeout> | undefined;
-    try {
-      const { error } = await Promise.race([
-        supabase.auth.signOut({ scope: 'local' }),
-        new Promise<never>((_, rechazar) => {
-          temporizador = setTimeout(() => rechazar(new Error('Tiempo de espera agotado')), 15000);
-        }),
-      ]);
-      if (error) informarError();
-      else setEmailUsuario(null);
-    } catch {
-      informarError();
-    } finally {
-      clearTimeout(temporizador);
-      setCerrando(false);
-    }
-  }
-
   async function ingresar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setErrorCierre('');
     const formData = new FormData(event.currentTarget);
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -121,9 +87,8 @@ export default function Home() {
 
   return (
     <main className="container">
-      <header><p className="marca">LITO RESERVAS</p><h1>Tu bienestar comienza acá</h1><p>{ingresado ? 'Administrá tu cuenta.' : 'Creá tu cuenta o ingresá para acceder a LITO.'}</p></header>
-      {errorCierre && <p role="alert">{errorCierre}</p>}
-      {ingresado ? <><section className="cuenta"><h2>Mi cuenta</h2><p>Sesión iniciada como:</p><p>{emailUsuario}</p><button type="button" onClick={cerrarSesion} disabled={cerrando}>{cerrando ? 'Cerrando sesión...' : 'Cerrar sesión'}</button></section><AgendaCliente key={emailUsuario} versionCitas={versionCitas} onSolicitudFinalizada={() => setVersionCitas(valor => valor + 1)} /></> : <div className="formularios">
+      <header className={ingresado ? 'introduccion introduccion-cuenta' : 'introduccion'}>{!ingresado && <p className="marca">BIENVENIDO A LITO</p>}<h1>{ingresado ? 'LITO MASAJES' : <>Tu bienestar<br />comienza acá</>}<span className="punto-titulo">.</span></h1><p>{ingresado ? 'Elegí una opción para continuar.' : 'Creá tu cuenta o ingresá para acceder a LITO.'}</p></header>
+      {ingresado ? <AgendaCliente key={emailUsuario} versionCitas={versionCitas} onSolicitudFinalizada={() => setVersionCitas(valor => valor + 1)} /> : <div className="formularios">
       <form aria-label="Registro" onSubmit={registrar}>
         <h2>Crear cuenta</h2>
         <label>Nombre completo<input name="nombre" aria-describedby={mensaje === 'Ingresá tu nombre completo.' ? 'error-nombre' : undefined} /></label>
