@@ -6,13 +6,14 @@ test('el administrador revisa y confirma una reducción de disponibilidad', asyn
   const email = `story9-${crypto.randomUUID()}@example.test`;
   const sql = (statement: string) => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', statement]);
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
   await registro.getByLabel('Email').fill(email);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
   sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${email}')`);
   let llamadas = 0;
   try {
@@ -51,13 +52,14 @@ test('la agenda ofrece los horarios configurados para el día elegido', async ({
   const sql = (statement: string) => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', statement]);
   try {
     await page.goto('/');
+    await page.getByRole('link', { name: 'CREAR UNA' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
     await registro.getByLabel('Email').fill(email);
     await registro.getByLabel('Teléfono').fill('099123456');
     await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-    await registro.getByRole('button', { name: 'Registrarse' }).click();
-    await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+    await registro.getByRole('button', { name: 'CREAR' }).click();
+    await expect(registro).toBeHidden();
     await page.route(/\/rest\/v1\/rpc\/disponibilidad_semanal(?:\?|$)/, route => route.fulfill({ json: [{ dia: 6, hora: 14 }] }));
     await page.route(/\/rest\/v1\/rpc\/horarios_ocupados(?:\?|$)/, route => route.fulfill({ json: [] }));
     await page.reload();

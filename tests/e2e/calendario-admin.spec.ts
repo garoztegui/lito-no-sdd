@@ -10,13 +10,14 @@ test('muestra el mes y las reservas de un día en orden de hora', async ({ page 
   const mes = dia.slice(0, 7);
   try {
     await page.goto('/');
+    await page.getByRole('link', { name: 'CREAR UNA' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Cliente Calendario');
     await registro.getByLabel('Email').fill(email);
     await registro.getByLabel('Teléfono').fill('099123456');
     await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-    await registro.getByRole('button', { name: 'Registrarse' }).click();
-    await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+    await registro.getByRole('button', { name: 'CREAR' }).click();
+    await expect(registro).toBeHidden();
     sql(`update public.perfiles set es_administrador=true where id=(select id from auth.users where email='${email}');
       insert into public.citas (cliente_id,inicio,servicio,estado) select id, '${dia} 10:00 America/Montevideo', 'Espalda', 'pendiente' from auth.users where email='${email}';
       insert into public.citas (cliente_id,inicio,servicio,estado) select id, '${dia} 12:00 America/Montevideo', 'Espalda', 'confirmada' from auth.users where email='${email}'`);

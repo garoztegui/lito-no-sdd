@@ -3,13 +3,14 @@ import { fechaConTurnoDisponible } from './horarios';
 
 test('un cliente solicita un turno disponible', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
   await page.reload();
 
   const fecha = new Date(Date.now() + (35 + Math.floor(Math.random() * 25)) * 86400000);
@@ -28,13 +29,14 @@ test('un cliente solicita un turno disponible', async ({ page }) => {
 
 test('si falla la consulta no se muestran horarios como disponibles', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
   await page.route('**/rest/v1/rpc/horarios_ocupados', route => route.fulfill({ status: 503, body: '{}' }));
   await page.reload();
   const fecha = new Date(Date.now() + 40 * 86400000);
@@ -49,13 +51,14 @@ test('un horario tomado mientras otro cliente lo solicita muestra un error', asy
   const paginas = await Promise.all(contextos.map(contexto => contexto.newPage()));
   for (const page of paginas) {
     await page.goto('/');
+    await page.getByRole('link', { name: 'CREAR UNA' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
     await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
     await registro.getByLabel('Teléfono').fill('099123456');
     await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-    await registro.getByRole('button', { name: 'Registrarse' }).click();
-    await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+    await registro.getByRole('button', { name: 'CREAR' }).click();
+    await expect(registro).toBeHidden();
     await page.reload();
   }
   const fecha = fechaConTurnoDisponible();
@@ -78,13 +81,14 @@ test('un horario tomado mientras otro cliente lo solicita muestra un error', asy
 
 test('si la solicitud no responde se informa y termina la espera', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
   await page.reload();
   await page.getByLabel('Fecha').fill(fechaConTurnoDisponible());
   await page.getByLabel('Servicio').selectOption({ label: 'Espalda' });
@@ -108,13 +112,14 @@ test('si la solicitud no responde se informa y termina la espera', async ({ page
 
 test('si la consulta de horarios no responde permite reintentar', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
   let liberar!: () => void;
   const espera = new Promise<void>(resolve => { liberar = resolve; });
   await page.route('**/rest/v1/rpc/horarios_ocupados', async route => { await espera; await route.abort(); });

@@ -3,13 +3,14 @@ import { fechaConTurnoDisponible } from './horarios';
 
 async function ingresarComoCliente(page: Page) {
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
 }
 
 test('un cliente sin citas ve el mensaje de lista vacía', async ({ page }) => {

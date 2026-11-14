@@ -24,13 +24,14 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
       ('${cliente}', now() - interval '1 day','Espalda','confirmada')`);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
+    await page.getByRole('link', { name: 'CREAR UNA' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Admin Prueba');
     await registro.getByLabel('Email').fill(email);
     await registro.getByLabel('Teléfono').fill('099123456');
     await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-    await registro.getByRole('button', { name: 'Registrarse' }).click();
-    await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+    await registro.getByRole('button', { name: 'CREAR' }).click();
+    await expect(registro).toBeHidden();
     sql(`update public.perfiles set es_administrador=true where id=(select id from auth.users where email='${email}')`);
     await page.goto(`/agenda-admin/clientes/${cliente}`);
     const filas = page.getByRole('region', { name: 'Historial de citas' }).getByRole('listitem');

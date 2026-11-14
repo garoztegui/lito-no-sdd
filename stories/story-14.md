@@ -6,7 +6,7 @@ Como cliente, quiero cerrar sesión, para salir de mi cuenta en el dispositivo q
 
 ## Criterios de aceptación
 
-- [x] Dado que inicié sesión, cuando elijo cerrar sesión, entonces salgo de mi cuenta y vuelvo a ver las opciones de registro e ingreso.
+- [x] Dado que inicié sesión, cuando elijo cerrar sesión, entonces salgo de mi cuenta y vuelvo a ver el inicio de sesión y el enlace para crear una cuenta.
 - [x] Dado que cerré sesión, cuando recargo la página, entonces mi cuenta y la opción de solicitar citas permanecen inaccesibles hasta que vuelva a ingresar.
 - [x] Dado que intento cerrar sesión, cuando no se puede completar la operación, entonces recibo un mensaje que me informa del problema.
 

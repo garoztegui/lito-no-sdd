@@ -3,13 +3,14 @@ import { expect, test } from '@playwright/test';
 test('el cliente usa el menú, filtra sus citas y modifica sus datos', async ({ page }) => {
   const email = `config-${crypto.randomUUID()}@example.test`;
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Prueba');
   await registro.getByLabel('Email').fill(email);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
   await page.reload();
   for (const nombre of ['Mis citas', 'Reservar cita']) await expect(page.getByRole('button', { name: nombre, exact: true })).toBeVisible();
   await page.getByText('Cliente Prueba', { exact: true }).click();

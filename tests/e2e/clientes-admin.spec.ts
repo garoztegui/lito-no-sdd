@@ -8,13 +8,14 @@ test.skip(!/^supabase_db_litov2-story13-[a-f0-9]{8}$/.test(contenedor) || url !=
 
 async function registrar(page: Page, email: string) {
   await page.goto('/');
+  await page.getByRole('link', { name: 'CREAR UNA' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cuenta de Prueba');
   await registro.getByLabel('Email').fill(email);
   await registro.getByLabel('Teléfono').fill('099123456');
   await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-  await registro.getByRole('button', { name: 'Registrarse' }).click();
-  await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
 }
 
 test('solo el administrador consulta datos e historial completo de clientes', async ({ page, browser }, testInfo) => {

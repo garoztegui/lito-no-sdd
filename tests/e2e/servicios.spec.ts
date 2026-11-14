@@ -12,13 +12,14 @@ test('el administrador crea y renombra un servicio disponible para reservas', as
   let servicioId = '';
   try {
     await page.goto('/');
+    await page.getByRole('link', { name: 'CREAR UNA' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
     await registro.getByLabel('Email').fill(email);
     await registro.getByLabel('Teléfono').fill('099123456');
     await registro.getByLabel('Contraseña').fill('ClaveSegura123');
-    await registro.getByRole('button', { name: 'Registrarse' }).click();
-    await expect(registro.getByText('Cuenta creada.')).toBeVisible();
+    await registro.getByRole('button', { name: 'CREAR' }).click();
+    await expect(registro).toBeHidden();
     sql(`update public.perfiles set es_administrador = true where id = (select id from auth.users where email = '${email}')`);
     await page.goto('/agenda-admin?seccion=servicios');
     const catalogo = page.getByRole('region', { name: 'Catálogo de servicios' });
