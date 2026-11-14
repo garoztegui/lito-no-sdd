@@ -15,13 +15,14 @@ async function registrar(page: Page) {
   const { refresh_token } = await respuesta.json();
   await expect(registro.getByText('Cuenta creada.')).toBeVisible();
   await page.reload();
-  await expect(page.getByText(email, { exact: true })).toBeVisible();
+  await expect(page.getByText('Cliente Ejemplo', { exact: true })).toBeVisible();
   return { email, password, refresh_token, url: new URL(respuesta.url()).origin, apikey: respuesta.request().headers().apikey };
 }
 
 test('cerrar sesión vuelve al ingreso y sigue cerrada al recargar', async ({ page }) => {
   const { email, password, refresh_token, url, apikey } = await registrar(page);
   const cierre = page.waitForResponse(response => response.url().includes('/auth/v1/logout'));
+  await page.getByText('Cliente Ejemplo', { exact: true }).click();
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   expect((await cierre).ok()).toBe(true);
   await expect(page.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
@@ -42,7 +43,7 @@ test('cerrar sesión vuelve al ingreso y sigue cerrada al recargar', async ({ pa
   await ingreso.getByLabel('Email').fill(email);
   await ingreso.getByLabel('Contraseña').fill(password);
   await ingreso.getByRole('button', { name: 'Ingresar' }).click();
-  await expect(page.getByText(email, { exact: true })).toBeVisible();
+  await expect(page.getByText('Cliente Ejemplo', { exact: true })).toBeVisible();
 });
 
 test('cerrar sesión no cierra la sesión de otro dispositivo', async ({ page, browser }) => {
@@ -58,13 +59,14 @@ test('cerrar sesión no cierra la sesión de otro dispositivo', async ({ page, b
     await ingreso.getByRole('button', { name: 'Ingresar' }).click();
     const respuesta = await inicio;
     const { refresh_token } = await respuesta.json();
-    await expect(pagina.getByText(email, { exact: true })).toBeVisible();
+    await expect(pagina.getByText('Cliente Ejemplo', { exact: true })).toBeVisible();
     const cierre = page.waitForResponse(response => response.url().includes('/auth/v1/logout'));
+    await page.getByText('Cliente Ejemplo', { exact: true }).click();
     await page.getByRole('button', { name: 'Cerrar sesión' }).click();
     expect((await cierre).ok()).toBe(true);
     await expect(page.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
     await pagina.reload();
-    await expect(pagina.getByText(email, { exact: true })).toBeVisible();
+    await expect(pagina.getByText('Cliente Ejemplo', { exact: true })).toBeVisible();
     const renovacion = await pagina.request.post(`${new URL(respuesta.url()).origin}/auth/v1/token?grant_type=refresh_token`, {
       headers: { apikey: respuesta.request().headers().apikey },
       data: { refresh_token },
@@ -79,7 +81,8 @@ test('cerrar sesión también actualiza otra pestaña del mismo navegador', asyn
   const { email } = await registrar(page);
   const otra = await context.newPage();
   await otra.goto('/');
-  await expect(otra.getByText(email, { exact: true })).toBeVisible();
+  await expect(otra.getByText('Cliente Ejemplo', { exact: true })).toBeVisible();
+  await page.getByText('Cliente Ejemplo', { exact: true }).click();
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(otra.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
   await expect(otra.getByRole('heading', { name: 'Mi cuenta' })).toHaveCount(0);
@@ -88,6 +91,7 @@ test('cerrar sesión también actualiza otra pestaña del mismo navegador', asyn
 test('informa si el servidor no confirma el cierre de sesión', async ({ page }) => {
   await registrar(page);
   await page.route('**/auth/v1/logout**', route => route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"Error"}' }));
+  await page.getByText('Cliente Ejemplo', { exact: true }).click();
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(page.getByRole('alert').getByText('Se cerró la sesión en este dispositivo, pero no se pudo confirmar el cierre en el servidor.')).toBeVisible();
   await expect(page.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
@@ -100,6 +104,7 @@ test('avisa si la confirmación del servidor no responde', async ({ page }) => {
   await page.route('**/auth/v1/logout**', async route => { await espera; await route.abort(); });
   await page.clock.install();
   const solicitud = page.waitForRequest(request => request.url().includes('/auth/v1/logout'));
+  await page.getByText('Cliente Ejemplo', { exact: true }).click();
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await solicitud;
   try {
@@ -110,6 +115,6 @@ test('avisa si la confirmación del servidor no responde', async ({ page }) => {
     await ingreso.getByLabel('Email').fill(email);
     await ingreso.getByLabel('Contraseña').fill(password);
     await ingreso.getByRole('button', { name: 'Ingresar' }).click();
-    await expect(page.getByText(email, { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Cliente Ejemplo', { exact: true })).toBeVisible({ timeout: 5000 });
   } finally { liberar(); }
 });

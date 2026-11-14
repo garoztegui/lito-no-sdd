@@ -1,83 +1,114 @@
-# aqui se describen las decisiones de UI
----
-name: ui
-description: Guía de diseño y accesibilidad para LITO Reservas. Usar al crear o modificar pantallas, componentes, formularios, estilos o flujos visuales de la aplicación.
----
+# Guía de interfaz — LITO Masajes
 
-# Diseño de interfaz de LITO Reservas
+## Objetivo
 
-Aplicar estas pautas al diseñar, implementar o modificar la interfaz. Revisar
-primero los componentes y estilos existentes para mantener la coherencia.
+Diseñar una aplicación web moderna, clara y cercana, enfocada en masajes
+deportivos, recuperación muscular y bienestar.
+
+La experiencia debe estar pensada principalmente para celulares: tanto los
+clientes como los administradores deben poder completar sus tareas de forma
+cómoda desde una pantalla pequeña.
+
+Usar las imágenes de referencia aprobadas como guía visual. Adaptarlas a
+las funcionalidades reales del proyecto sin inventar reglas de negocio,
+estados, servicios o datos.
 
 ## Identidad visual
 
-- Crear una interfaz moderna, clara y profesional, apropiada para un servicio
-  de masajes y bienestar.
-- Usar negro y tonos oscuros como base de los fondos.
-- Usar amarillo como color principal para acciones, elementos destacados y
-  detalles visuales.
-- Usar blanco y tonos claros para textos y otros elementos que necesiten
-  buena legibilidad sobre fondos oscuros.
-- Mantener una paleta limitada y coherente. Evitar usar amarillo en todos
-  los elementos: reservarlo para dar énfasis y orientar al usuario.
-- Definir colores y estilos reutilizables mediante las herramientas que
-  ofrezca el proyecto. Evitar repetir valores aislados en cada componente.
-- Evitar introducir una biblioteca de componentes solo por preferencia:
-  justificarla según las necesidades del proyecto.
+- Usar fondos blancos o tonos claros, con azul intenso como color principal
+  para botones, selecciones, enlaces y detalles.
+- Usar azul oscuro o un tono similar para títulos y texto, manteniendo un
+  contraste accesible.
+- Transmitir una sensación deportiva, moderna, profesional y amigable.
+- Usar tipografía clara, con títulos destacados y textos fáciles de leer.
+- Utilizar bordes suaves, tarjetas simples y una separación visual cómoda.
+- Mantener una identidad coherente entre las pantallas de clientes y
+  administradores.
+- Dejar espacio para proponer mejoras visuales: las imágenes son una
+  referencia de estilo, no una plantilla que deba copiarse al píxel.
+
+Definir y reutilizar colores, tipografías, espacios y estilos mediante los
+mecanismos existentes del proyecto. Evitar valores visuales duplicados
+innecesariamente.
+
+## Imágenes e iconos
+
+- Usar, cuando aporten a la experiencia, imágenes relacionadas con masajes,
+  deporte, recuperación y bienestar.
+- Las imágenes no deben mostrar personas ni partes del cuerpo. Preferir
+  elementos como rodillos de masaje, pelotas, toallas o aceites.
+- Priorizar imágenes discretas que no dificulten la lectura ni ocupen
+  demasiado espacio en el celular.
+- Usar iconos claros y consistentes para acompañar acciones o información.
+  Los controles con iconos deben tener nombres accesibles.
+- Usar recursos propios, generados para el proyecto o con licencia adecuada.
+  Optimizar su tamaño para no perjudicar la velocidad de carga.
+
+## Navegación y uso móvil
+
+- Diseñar primero para celulares y adaptar la interfaz a pantallas más grandes.
+- Evitar el desplazamiento horizontal en los flujos principales.
+- Mantener las acciones frecuentes fáciles de encontrar y usar con el pulgar.
+- Usar botones y controles con tamaño y separación cómodos para interacción
+  táctil.
+- Mantener la navegación simple y coherente. Se pueden utilizar menús
+  desplegables o un menú compacto cuando ayuden a organizar las opciones.
+- Identificar claramente dónde está el usuario y cómo volver o continuar.
+- No depender del hover para mostrar información o completar acciones.
+- Organizar la información en secciones breves y fáciles de recorrer.
+
+## Reservas y agenda
+
+- Presentar el servicio, la fecha y el horario de forma clara.
+- Usar calendarios y selectores comprensibles en pantallas pequeñas.
+- Diferenciar visualmente las opciones disponibles, seleccionadas y no
+  disponibles, sin depender únicamente del color.
+- Mostrar un resumen entendible antes de confirmar una solicitud cuando
+  el flujo lo requiera.
+- Comunicar el estado real de la cita con texto claro, por ejemplo
+  «Pendiente» o «Confirmada», según los estados existentes.
+- Mostrar mensajes útiles si no hay horarios, si uno deja de estar disponible
+  o si ocurre un error.
+- Conservar las reglas reales de duración, disponibilidad, permisos y estados.
+  Las fechas y horarios de las imágenes de referencia son ilustrativos.
+
+## Pantallas de administración
+
+- Priorizar que Lito pueda consultar y gestionar la agenda rápidamente.
+- Presentar usuarios, citas, servicios y disponibilidad de forma ordenada,
+  con búsqueda o filtros cuando sean útiles para la tarea.
+- Hacer evidentes las acciones principales y pedir confirmación cuando una
+  acción tenga consecuencias importantes.
+- Adaptar tablas o listas complejas para que se puedan usar en celular.
+- Mostrar únicamente acciones y datos que correspondan al rol del usuario.
 
 ## Accesibilidad
 
-- Mantener un contraste suficiente entre texto, controles y sus fondos,
-  siguiendo como mínimo WCAG AA: 4,5:1 para texto normal y 3:1 para texto
-  grande y para límites o indicadores visuales necesarios de controles.
-- Prestar especial atención al texto amarillo sobre blanco y al texto blanco
-  sobre amarillo. Usar combinaciones comprobadas, como texto oscuro sobre
-  botones amarillos cuando proporcionen contraste suficiente.
-- No comunicar estados, errores o disponibilidad únicamente mediante color.
-  Acompañarlos con texto, iconos u otras señales comprensibles.
-- Usar elementos semánticos y etiquetas claras en formularios y controles.
-- Permitir navegar y completar los flujos con teclado. Mantener el foco
-  visible y en un orden lógico.
-- Dar a los botones y enlaces nombres que indiquen su acción. Asegurar que
-  los iconos interactivos tengan una etiqueta accesible.
-- Mostrar errores cerca del campo correspondiente, explicar cómo corregirlos
-  y conservar los datos ingresados cuando sea posible.
-- Respetar la preferencia del sistema de reducir movimiento.
+- Mantener como mínimo contraste WCAG AA en textos y componentes relevantes:
+  4,5:1 para texto normal y 3:1 para texto grande y para los indicadores
+  visuales necesarios de controles y estados.
+- Usar etiquetas claras en campos, botones y enlaces.
+- Permitir la navegación mediante teclado y mantener el foco visible.
+- No comunicar información únicamente mediante color, iconos o imágenes.
+- Mostrar errores cerca del campo correspondiente y explicar cómo resolverlos.
+- Mantener la interfaz utilizable al ampliar el texto y respetar la preferencia
+  del usuario de reducir movimiento.
+- Usar HTML semántico y las funciones de accesibilidad de los componentes
+  existentes.
 
-## Diseño adaptable
+## Forma de trabajo
 
-- Diseñar primero para celulares y adaptar la interfaz a tabletas y pantallas
-  de escritorio.
-- Evitar el desplazamiento horizontal en los flujos principales.
-- Usar controles cómodos para interacción táctil, con suficiente tamaño y
-  separación.
-- Mantener textos legibles y contenido organizado en pantallas pequeñas,
-  incluso cuando el usuario amplía el texto.
-- No depender del hover para acceder a información o ejecutar acciones.
-
-## Experiencia de uso
-
-- Priorizar tareas claras y pocos pasos para reservar y administrar citas.
-- Mantener navegación, botones, formularios y mensajes consistentes.
-- Mostrar estados de carga, confirmaciones, listas vacías y errores cuando
-  correspondan.
-- Evitar animaciones, adornos y efectos que dificulten la lectura o ralenticen
-  la tarea.
-- Presentar fechas y horarios de forma clara y coherente con la zona horaria
-  definida para la aplicación.
-
-## Verificación
-
-Para cada cambio visual:
-
-1. Revisar la pantalla afectada en una vista móvil y, cuando corresponda,
-   en escritorio.
-2. Comprobar contraste de las combinaciones nuevas o modificadas.
-3. Revisar etiquetas, foco visible y navegación por teclado en los controles
-   afectados.
-4. Comprobar los estados de carga, error y confirmación que cambien.
-5. Ejecutar únicamente las verificaciones automáticas pertinentes al cambio
-   y respetar los controles obligatorios del proyecto.
-
-Informar qué se comprobó y cualquier problema de accesibilidad pendiente.
-No afirmar que toda la aplicación cumple WCAG por haber revisado una pantalla.
+- Antes de modificar una pantalla, revisar la guía visual, las referencias
+  disponibles y los componentes relacionados del proyecto.
+- Reutilizar componentes y estilos cuando tenga sentido; proponer mejoras
+  cuando los existentes no se adapten al diseño aprobado.
+- Para rediseños grandes, trabajar por pantallas o flujos acotados para que
+  el responsable del proyecto pueda revisar el resultado.
+- Cuando se solicite un prototipo, usar datos ficticios y dejar claro qué
+  acciones todavía no funcionan.
+- No modificar reglas de negocio, permisos o base de datos por una decisión
+  visual, salvo que el cambio haya sido solicitado.
+- Verificar los cambios visuales según su alcance: vista móvil, contraste,
+  foco y estados afectados. Ampliar las pruebas cuando el comportamiento
+  modificado lo requiera.
+- Al terminar, explicar brevemente qué cambió y qué se verificó.

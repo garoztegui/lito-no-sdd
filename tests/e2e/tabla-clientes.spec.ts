@@ -27,6 +27,7 @@ test('muestra los datos en tabla ordenada por nombre y permite ver las citas', a
     await page.goto('/agenda-admin/clientes');
     const tabla = page.getByRole('table', { name: 'Lista de clientes' });
     const filas = tabla.getByRole('row');
+    await expect(filas.filter({ hasText: admin })).toHaveCount(0);
     const ana = filas.filter({ hasText: 'Ana Zárate' });
     const zoe = filas.filter({ hasText: 'Zoe Álvarez' });
     for (const dato of ['Ana Zárate', `tabla-ana-${sufijo}@example.test`, '099111222', 'Mujer']) await expect(ana).toContainText(dato);

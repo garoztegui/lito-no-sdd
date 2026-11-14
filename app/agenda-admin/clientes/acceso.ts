@@ -11,5 +11,5 @@ export async function accesoAdministrador() {
   const { data: perfil, error: errorPerfil } = await supabase.from('perfiles').select('es_administrador').eq('id', user.id).maybeSingle();
   if (errorPerfil) return { estado: 'error' as const };
   if (!perfil?.es_administrador) return { estado: 'sin_acceso' as const };
-  return { estado: 'autorizado' as const, supabase };
+  return { estado: 'autorizado' as const, supabase, usuarioId: user.id };
 }
