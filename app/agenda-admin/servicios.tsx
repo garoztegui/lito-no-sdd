@@ -103,9 +103,11 @@ export default function Servicios() {
         </select></label>
         {servicios.filter(servicio => servicio.id === seleccion).map(servicio => <div key={servicio.id}>
           <p>Estado: {servicio.bloqueado ? 'Bloqueado' : 'Disponible'}</p>
-          <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'renombrar' }); }}>Cambiar nombre</button>
-          {!servicio.bloqueado && <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'bloquear' }); }}>Bloquear servicio</button>}
-          <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'borrar' }); }}>Borrar servicio</button>
+          <div className="acciones-servicio">
+            <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'renombrar' }); }}>Cambiar nombre</button>
+            {!servicio.bloqueado && <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'bloquear' }); }}>Bloquear servicio</button>}
+            <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'borrar' }); }}>Borrar servicio</button>
+          </div>
         </div>)}
       </>}
     </section>
