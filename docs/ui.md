@@ -1,9 +1,9 @@
-# Guía de interfaz — LITO Masajes
+﻿# Guía de interfaz — LITO masajes & fisioterapia
 
 ## Objetivo
 
-Diseñar una aplicación web moderna, clara y cercana, enfocada en masajes
-deportivos, recuperación muscular y bienestar.
+Diseñar una aplicación web moderna, clara y cercana, enfocada en masajes,
+fisioterapia, recuperación muscular y bienestar.
 
 La experiencia debe estar pensada principalmente para celulares: tanto los
 clientes como los administradores deben poder completar sus tareas de forma
@@ -34,7 +34,7 @@ innecesariamente.
 ## Imágenes e iconos
 
 - Usar, cuando aporten a la experiencia, imágenes relacionadas con masajes,
-  deporte, recuperación y bienestar.
+  fisioterapia, deporte, recuperación y bienestar.
 - Las imágenes no deben mostrar personas ni partes del cuerpo. Preferir
   elementos como rodillos de masaje, pelotas, toallas o aceites.
 - Priorizar imágenes discretas que no dificulten la lectura ni ocupen

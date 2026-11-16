@@ -7,5 +7,5 @@ export default {
 
 Ingresá a la aplicación para aceptar o rechazar la propuesta.
 
-El equipo de LITO`,
+El equipo de LITO masajes & fisioterapia`,
 };

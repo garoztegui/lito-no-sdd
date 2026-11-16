@@ -13,6 +13,7 @@ test('cada email tiene una plantilla editable con asunto y texto', () => {
     assert.equal(typeof plantilla.subject, 'string');
     assert.equal(typeof plantilla.text, 'string');
     assert.ok(plantilla.subject && plantilla.text);
+    assert.match(plantilla.text, /LITO masajes & fisioterapia/);
   }
 });
 

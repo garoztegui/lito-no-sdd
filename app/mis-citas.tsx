@@ -1,14 +1,25 @@
 'use client';
 
 import { createBrowserClient } from '@supabase/ssr';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { conLimite } from './limite';
 import ConfirmarCancelacion from './confirmar-cancelacion';
+import EsperaAccion from './espera-accion';
 
 type Cita = { id: string; inicio: string; servicio: string; estado: string };
 const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', dateStyle: 'long', timeStyle: 'short', hourCycle: 'h23',
 });
+
+function AvisoCancelacion({ cerrar }: { cerrar: () => void }) {
+  const dialogo = useRef<HTMLDialogElement>(null);
+  useEffect(() => { dialogo.current?.showModal(); }, []);
+  return <dialog ref={dialogo} aria-labelledby="titulo-aviso-cancelacion" onCancel={event => { event.preventDefault(); cerrar(); }}>
+    <h2 id="titulo-aviso-cancelacion">Cancelación no disponible</h2>
+    <p>Ya no podés cancelar esta cita: faltan 24 horas o menos.</p>
+    <div className="botones-confirmacion"><button type="button" onClick={cerrar} autoFocus>Cerrar</button></div>
+  </dialog>;
+}
 
 export default function MisCitas({ version, onCancelacion }: { version: number; onCancelacion: () => void }) {
   const [citas, setCitas] = useState<Cita[]>([]);
@@ -18,6 +29,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [respondiendo, setRespondiendo] = useState(false);
   const [confirmacion, setConfirmacion] = useState<{ id: string; rechazo: boolean } | null>(null);
+  const [avisoCancelacion, setAvisoCancelacion] = useState(false);
   const [filtro, setFiltro] = useState('todos');
 
   async function cancelar(citaId: string) {
@@ -27,7 +39,8 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
       const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
       const { data, error } = await supabase.rpc('cancelar_cita_cliente', { p_cita_id: citaId });
       if (error) throw error;
-      setRespuesta(data === 'cancelada' ? 'La cita quedó cancelada.' : data === 'fuera_de_plazo' ? 'Ya no podés cancelar esta cita: faltan 24 horas o menos.' : 'La cita ya no está disponible para cancelar.');
+      if (data === 'fuera_de_plazo') setAvisoCancelacion(true);
+      else setRespuesta(data === 'cancelada' ? 'La cita quedó cancelada.' : 'La cita ya no está disponible para cancelar.');
       if (data === 'cancelada') onCancelacion();
       setIntento(valor => valor + 1);
     } catch {
@@ -104,6 +117,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
   const citasFiltradas = citas.filter(cita => filtro === 'todos' || estadoVisible(cita) === filtro);
 
   return <section className="mis-citas" aria-labelledby="titulo-mis-citas">
+    {respondiendo && <EsperaAccion />}
     <h2 id="titulo-mis-citas">Mis citas</h2>
     <label>Filtrar por estado<select value={filtro} onChange={event => setFiltro(event.target.value)}>
       <option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="confirmada">Confirmada</option><option value="propuesta">Propuesta</option><option value="cancelada">Cancelada</option><option value="rechazada">Rechazada</option>
@@ -119,7 +133,10 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
           <p><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time> (Montevideo)</p>
           <p>Estado: <strong>{estadoActual.charAt(0).toUpperCase() + estadoActual.slice(1)}</strong></p>
           {(estadoActual === 'pendiente' || estadoActual === 'confirmada') && ahora !== null && Date.parse(cita.inicio) > ahora &&
-            <button type="button" disabled={respondiendo} onClick={() => setConfirmacion({ id: cita.id, rechazo: false })}>Cancelar cita</button>}
+            <button type="button" disabled={respondiendo} onClick={() => {
+              if (cita.estado === 'confirmada' && Date.parse(cita.inicio) <= Date.now() + 24 * 60 * 60 * 1000) setAvisoCancelacion(true);
+              else setConfirmacion({ id: cita.id, rechazo: false });
+            }}>Cancelar cita</button>}
           {estadoActual === 'propuesta' && <div className="acciones-cita">
             <button type="button" disabled={respondiendo} onClick={() => responder(cita.id, 'aceptar')}>Aceptar propuesta</button>
             <button type="button" disabled={respondiendo} onClick={() => setConfirmacion({ id: cita.id, rechazo: true })}>Rechazar propuesta</button>
@@ -128,5 +145,6 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
       })}</ul>}
     {confirmacion && <ConfirmarCancelacion mensaje={confirmacion.rechazo ? '¿Estás seguro de rechazar la propuesta y cancelar la cita?' : '¿Estás seguro de cancelar la cita?'}
       onNo={() => setConfirmacion(null)} onSi={() => { const { id, rechazo } = confirmacion; setConfirmacion(null); void (rechazo ? responder(id, 'rechazar') : cancelar(id)); }} />}
+    {avisoCancelacion && <AvisoCancelacion cerrar={() => setAvisoCancelacion(false)} />}
   </section>;
 }

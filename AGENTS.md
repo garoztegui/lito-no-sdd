@@ -2,7 +2,7 @@
 
 ## Contexto y decisiones
 
-LITO Reservas es una aplicación web para gestionar las citas de un masajista,
+LITO masajes & fisioterapia cuenta con una aplicación web para gestionar sus citas,
 con una agenda compartida para clientes y un único administrador. Debe ser
 cómoda de usar desde el celular. El stack acordado es Next.js, TypeScript,
 Supabase y Vercel. La aplicación requiere conexión, usa español y no maneja

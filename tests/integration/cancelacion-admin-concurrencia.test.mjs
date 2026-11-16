@@ -20,8 +20,9 @@ test('el plazo se comprueba después de esperar el bloqueo de la cita', async ()
       create table public.perfiles (id uuid primary key, es_administrador boolean not null);
       create table public.citas (id uuid primary key, inicio timestamptz not null, estado text not null);
       insert into public.perfiles values ('${admin}', true);
-      insert into public.citas values ('${cita}', clock_timestamp() + interval '24 hours 3 seconds', 'confirmada');`);
+      insert into public.citas values ('${cita}', clock_timestamp() + interval '1 hour 3 seconds', 'confirmada');`);
     ejecutar(readFileSync('supabase/migrations/20261112123430_cancelacion_administrativa.sql', 'utf8'));
+    ejecutar(readFileSync('supabase/migrations/20261116155949_plazo_cancelacion_administrador.sql', 'utf8'));
     bloqueo = spawn('docker', ['exec', '-i', contenedor, 'psql', '-U', 'postgres', '-d', db, '-v', 'ON_ERROR_STOP=1'], { stdio: ['pipe', 'ignore', 'pipe'] });
     const terminado = new Promise((resolve, reject) => { bloqueo.on('error', reject); bloqueo.on('exit', code => code === 0 ? resolve() : reject(new Error(`Bloqueo terminó con ${code}`))); });
     await new Promise(resolve => bloqueo.stdin.end(`begin; select id from public.citas where id='${cita}' for update; select pg_sleep(5); commit;`, resolve));
@@ -31,7 +32,7 @@ test('el plazo se comprueba después de esperar el bloqueo de la cita', async ()
       if (!adquirido) await new Promise(resolve => setTimeout(resolve, 50));
     }
     assert.ok(adquirido, 'No se obtuvo el bloqueo de prueba');
-    assert.equal(ejecutar(`select inicio > clock_timestamp() + interval '24 hours' from public.citas where id='${cita}'`), 't');
+    assert.equal(ejecutar(`select inicio > clock_timestamp() + interval '1 hour' from public.citas where id='${cita}'`), 't');
     const resultado = ejecutar(`set role authenticated; select set_config('request.jwt.claim.sub', '${admin}', false); select public.cancelar_cita_administrador('${cita}', 'Motivo');`);
     assert.match(resultado, /fuera_de_plazo/);
     await terminado;

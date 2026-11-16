@@ -6,5 +6,5 @@ export default {
 📅 Fecha y hora: {{fecha}} (Montevideo)
 ✨ Servicio: {{servicio}}
 
-El equipo de LITO`,
+El equipo de LITO masajes & fisioterapia`,
 };

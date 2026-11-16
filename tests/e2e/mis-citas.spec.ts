@@ -140,11 +140,53 @@ test('una cita confirmada dentro del límite informa que no puede cancelarse', a
   await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
     { id: '11111111-1111-1111-1111-111111111111', inicio, servicio: 'Espalda', estado: 'confirmada' },
   ] }));
+  let cancelaciones = 0;
+  await page.route(/\/rest\/v1\/rpc\/cancelar_cita_cliente(?:\?|$)/, route => { cancelaciones++; return route.fulfill({ json: 'fuera_de_plazo' }); });
+  await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
+  const citas = page.getByRole('region', { name: 'Mis citas' });
+  await citas.getByRole('button', { name: 'Cancelar cita' }).click();
+  const aviso = page.getByRole('dialog', { name: 'Cancelación no disponible' });
+  await expect(aviso).toContainText('Ya no podés cancelar esta cita: faltan 24 horas o menos.');
+  await aviso.getByRole('button', { name: 'Cerrar' }).click();
+  expect(cancelaciones).toBe(0);
+  await expect(citas.getByRole('listitem')).toContainText('Confirmada');
+});
+
+test('si el servidor rechaza la cancelación por plazo vencido, muestra el aviso', async ({ page }) => {
+  await ingresarComoCliente(page);
+  const inicio = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+  await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
+    { id: '11111111-1111-1111-1111-111111111111', inicio, servicio: 'Espalda', estado: 'confirmada' },
+  ] }));
   await page.route(/\/rest\/v1\/rpc\/cancelar_cita_cliente(?:\?|$)/, route => route.fulfill({ json: 'fuera_de_plazo' }));
   await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await citas.getByRole('button', { name: 'Cancelar cita' }).click();
   await page.getByRole('dialog', { name: 'Confirmar cancelación' }).getByRole('button', { name: 'Sí', exact: true }).click();
-  await expect(citas.getByRole('status')).toHaveText('Ya no podés cancelar esta cita: faltan 24 horas o menos.');
+  await expect(page.getByRole('dialog', { name: 'Cancelación no disponible' })).toContainText('faltan 24 horas o menos');
   await expect(citas.getByRole('listitem')).toContainText('Confirmada');
+});
+
+test('la cancelación bloquea la pantalla mientras se procesa y la libera al terminar', async ({ page }) => {
+  await ingresarComoCliente(page);
+  const inicio = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
+    { id: '11111111-1111-1111-1111-111111111111', inicio, servicio: 'Espalda', estado: 'confirmada' },
+  ] }));
+  let liberar!: () => void;
+  const espera = new Promise<void>(resolve => { liberar = resolve; });
+  await page.route(/\/rest\/v1\/rpc\/cancelar_cita_cliente(?:\?|$)/, async route => { await espera; await route.fulfill({ json: 'no_disponible' }); });
+  await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
+  await page.getByRole('region', { name: 'Mis citas' }).getByRole('button', { name: 'Cancelar cita' }).click();
+  await page.getByRole('dialog', { name: 'Confirmar cancelación' }).getByRole('button', { name: 'Sí', exact: true }).click();
+  const carga = page.getByRole('dialog', { name: 'Procesando acción' });
+  await expect(carga).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(carga).toBeVisible();
+  liberar();
+  await expect(carga).toBeHidden();
+  await expect(page.getByText('La cita ya no está disponible para cancelar.')).toBeVisible();
 });

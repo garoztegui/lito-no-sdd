@@ -5,10 +5,10 @@ import './globals.css';
 export default function RootLayout({ children }: { children: ReactNode }) {
   return <html lang="es"><body>
     <div className="barra-marca"><div className="barra-marca-interior">
-      <a className="identidad" href="/" aria-label="Lito Masajes, ir al inicio"><span className="identidad-simbolo" aria-hidden="true" /><span>LITO<br />MASAJES</span></a>
+      <a className="identidad" href="/" aria-label="LITO masajes & fisioterapia, ir al inicio"><span className="identidad-simbolo" aria-hidden="true" /><span>LITO<br />MASAJES &amp; FISIOTERAPIA</span></a>
       <MenuCuenta />
     </div></div>
     {children}
-    <footer className="pie-sitio"><span>LITO MASAJES</span><span aria-hidden="true" className="pie-marcas" /></footer>
+    <footer className="pie-sitio"><span>LITO MASAJES &amp; FISIOTERAPIA</span><span aria-hidden="true" className="pie-marcas" /></footer>
   </body></html>;
 }

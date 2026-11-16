@@ -6,5 +6,5 @@ export default {
 ✨ Servicio: {{servicio}}
 📝 Motivo: {{motivo}}
 
-El equipo de LITO`,
+El equipo de LITO masajes & fisioterapia`,
 };

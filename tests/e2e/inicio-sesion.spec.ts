@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 test('un cliente accede a su cuenta con email y contraseña', async ({ browser }) => {
   const email = `prueba-${crypto.randomUUID()}@example.com`;
@@ -12,7 +12,7 @@ test('un cliente accede a su cuenta con email y contraseña', async ({ browser }
   await paginaRegistro.getByRole('form', { name: 'Registro' }).getByLabel('Email').fill(email);
   await paginaRegistro.getByRole('form', { name: 'Registro' }).getByLabel('Contraseña').fill(password);
   await paginaRegistro.getByRole('button', { name: 'CREAR' }).click();
-  await expect(paginaRegistro.getByRole('heading', { name: 'LITO MASAJES' })).toBeVisible();
+  await expect(paginaRegistro.getByRole('heading', { name: 'LITO MASAJES & FISIOTERAPIA' })).toBeVisible();
   await registro.close();
 
   const sesion = await browser.newContext({ baseURL: 'http://localhost:3000' });
@@ -22,7 +22,7 @@ test('un cliente accede a su cuenta con email y contraseña', async ({ browser }
   await formulario.getByLabel('Email').fill(email);
   await formulario.getByLabel('Contraseña').fill(password);
   await formulario.getByRole('button', { name: 'Ingresar' }).click();
-  await expect(pagina.getByRole('heading', { name: 'LITO MASAJES' })).toBeVisible();
+  await expect(pagina.getByRole('heading', { name: 'LITO MASAJES & FISIOTERAPIA' })).toBeVisible();
   await expect(pagina.getByText('Ana Ejemplo', { exact: true })).toBeVisible();
   await pagina.reload();
   await expect(pagina.getByText('Ana Ejemplo', { exact: true })).toBeVisible();
@@ -65,7 +65,7 @@ test('la cuenta sigue accesible después de recargar', async ({ page }) => {
   await registro.getByRole('button', { name: 'CREAR' }).click();
   await expect(registro).toBeHidden();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'LITO MASAJES' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'LITO MASAJES & FISIOTERAPIA' })).toBeVisible();
 });
 
 test('un ingreso fallido conserva el email', async ({ page }) => {

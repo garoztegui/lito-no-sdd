@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 test('email y contraseña son obligatorios antes de enviar el registro', async ({ page }) => {
   await page.goto('/');
@@ -146,7 +146,7 @@ test('el registro completo crea la cuenta sin confirmar el email', async ({ page
   expect(response.ok()).toBe(true);
   expect(user.email).toBe(email);
   expect(access_token).toBeTruthy();
-  await expect(page.getByRole('heading', { name: 'LITO MASAJES' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'LITO MASAJES & FISIOTERAPIA' })).toBeVisible();
   const perfil = await request.get(`${new URL(response.url()).origin}/rest/v1/perfiles?select=nombre,telefono,sexo`, {
     headers: { apikey: response.request().headers().apikey, Authorization: `Bearer ${access_token}` },
   });

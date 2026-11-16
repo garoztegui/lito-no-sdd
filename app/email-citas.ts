@@ -17,7 +17,7 @@ export async function enviarEmailsCita(supabase: SupabaseClient, citaId: string 
       if (errorDatos || !data) throw new Error('Email no disponible');
       const evento = data as { tipo: 'solicitud_cliente' | 'solicitud_admin' | 'confirmacion' | 'propuesta' | 'cancelacion'; destinatario: string; inicio: string; servicio: string; nombre: string; motivo: string };
       return evento;
-    }, message => transport.sendMail({ from: `LITO Reservas <${user}>`, ...message }));
+    }, message => transport.sendMail({ from: { name: 'LITO masajes & fisioterapia', address: user }, ...message }));
     registrarFallosEmail(resultados);
   } catch {
     console.error('No se pudieron enviar los emails de la cita.');

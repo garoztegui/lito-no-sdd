@@ -114,6 +114,33 @@ legend { margin-bottom: .75rem; font-weight: 700; }
 .acciones-historial textarea, .tabla-reservas textarea { width: 100%; min-height: 5rem; }
 dialog { width: min(100% - 2rem, 30rem); padding: 1.75rem; border: 1px solid var(--borde); border-radius: 1.1rem; background: #fff; color: var(--texto); box-shadow: 0 20px 60px rgb(13 27 73 / 25%); }
 dialog::backdrop { background: rgb(13 27 73 / 60%); }
+
+dialog.espera-accion {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0;
+  background: rgb(255 255 255 / 94%);
+  color: #0d1b49;
+}
+dialog.espera-accion[open] { display: grid; place-items: center; text-align: center; }
+.espera-accion-spinner {
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+  border: 0.3rem solid #b7d5f4;
+  border-top-color: #075eb5;
+  border-radius: 50%;
+  animation: espera-girar 0.8s linear infinite;
+}
+@keyframes espera-girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .espera-accion-spinner { animation: none; } }
 .modal-registro { max-height: 90dvh; overflow-y: auto; }
 .modal-registro form { padding: 0; border: 0; box-shadow: none; }
 .modal-registro .cancelar-registro { background: #fff; color: var(--acento-oscuro); border-color: #7083a3; }

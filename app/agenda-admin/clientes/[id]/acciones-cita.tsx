@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { gestionarCita } from './acciones';
 import SelectorHorario from '../../../selector-horario';
 import ConfirmarCancelacion from '../../../confirmar-cancelacion';
+import EsperaAccion from '../../../espera-accion';
 
 type Accion = 'aceptar' | 'rechazar' | 'proponer' | 'cancelar';
 const mensajes: Record<string, string> = {
@@ -12,7 +13,7 @@ const mensajes: Record<string, string> = {
   confirmada: 'Solicitud aceptada. La cita quedó confirmada.',
   propuesta: 'Propuesta de horario registrada.',
   cancelada: 'La cita quedó cancelada. El horario quedó disponible.',
-  fuera_de_plazo: 'No se puede cancelar la cita: faltan 24 horas o menos.',
+  fuera_de_plazo: 'No se puede cancelar la cita: falta menos de una hora.',
   motivo_invalido: 'Ingresá un motivo de cancelación.',
   horario_invalido: 'Elegí un horario válido y disponible.',
   horario_no_disponible: 'El horario elegido ya no está disponible. Elegí otro.',
@@ -60,6 +61,7 @@ export default function AccionesCita({ clienteId, citaId, estado, futura }: { cl
 
   if (!pendiente && !confirmada && !mensaje) return null;
   return <div className="acciones-historial">
+    {ocupado && <EsperaAccion />}
     {mensaje && <p role={tipoMensaje}>{mensaje}</p>}
     {pendiente && <>
       <form aria-label="Aceptar solicitud" onSubmit={event => { event.preventDefault(); void ejecutar('aceptar'); }}>

@@ -1,7 +1,7 @@
-﻿# Visión de producto: LITO Reservas
+﻿# Visión de producto: LITO masajes & fisioterapia
 
-LITO Reservas será una aplicación web para gestionar las citas de un masajista
-que actualmente usa una libreta. Habrá una única agenda compartida para LITO,
+LITO masajes & fisioterapia contará con una aplicación web para gestionar sus citas,
+que actualmente se registran en una libreta. Habrá una única agenda compartida para LITO,
 con acceso para un único administrador. Debe ser cómoda de usar desde el celular.
 
 ## Acordado
@@ -24,8 +24,8 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   propuesta antes de su vencimiento, sin contrapropuestas. Si acepta, la cita
   queda confirmada; si rechaza, se cancela.
 - Los clientes solo pueden acceder a sus propios datos y citas.
-- Una cita no puede cancelarse dentro de las 24 horas anteriores a su inicio.
-- El administrador puede cancelar una cita confirmada antes de ese plazo
+- El cliente no puede cancelar una cita confirmada cuando faltan 24 horas o menos.
+- El administrador puede cancelar una cita confirmada hasta una hora antes de su inicio
   indicando el motivo, que se envía por email al cliente. No puede proponer
   otro horario para una cita confirmada.
 - Mientras una propuesta de horario espera la respuesta del cliente, el

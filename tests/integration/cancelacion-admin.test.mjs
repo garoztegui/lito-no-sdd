@@ -7,21 +7,23 @@ const ejecutar = sql => execFileSync('docker', ['exec', '-i', contenedor, 'psql'
 
 test('solo un administrador cancela una cita confirmada vigente con motivo y libera el horario', () => {
   const sql = `begin;
-    create temp table prueba_cancelacion_admin (admin uuid, cliente uuid, futura uuid, cerca uuid, propuesta uuid, pendiente uuid, fecha timestamptz);
+    create temp table prueba_cancelacion_admin (admin uuid, cliente uuid, futura uuid, cerca uuid, limite uuid, propuesta uuid, pendiente uuid, fecha timestamptz);
     insert into auth.users (id, email, raw_user_meta_data) values
       ('00000000-0000-0000-0000-000000009951', 'story15-admin@example.test', '{"nombre":"Admin Prueba","telefono":"123","sexo":"Mujer"}'),
       ('00000000-0000-0000-0000-000000009952', 'story15-cliente@example.test', '{"nombre":"Cliente Prueba","telefono":"456","sexo":"Hombre"}');
     update public.perfiles set es_administrador = true where id = '00000000-0000-0000-0000-000000009951';
-    do $$ declare f uuid; c uuid; p uuid; s uuid; fecha_futura timestamptz := now() + interval '300 days'; begin
+    do $$ declare f uuid; c uuid; l uuid; p uuid; s uuid; fecha_futura timestamptz := now() + interval '300 days'; begin
       insert into public.citas (cliente_id, inicio, servicio, estado) values
         ('00000000-0000-0000-0000-000000009952', fecha_futura, 'Espalda', 'confirmada') returning id into f;
       insert into public.citas (cliente_id, inicio, servicio, estado) values
         ('00000000-0000-0000-0000-000000009952', now() + interval '23 hours 17 seconds', 'Espalda', 'confirmada') returning id into c;
       insert into public.citas (cliente_id, inicio, servicio, estado) values
+        ('00000000-0000-0000-0000-000000009952', now() + interval '59 minutes', 'Espalda', 'confirmada') returning id into l;
+      insert into public.citas (cliente_id, inicio, servicio, estado) values
         ('00000000-0000-0000-0000-000000009952', fecha_futura + interval '1 minute', 'Espalda', 'propuesta') returning id into p;
       insert into public.citas (cliente_id, inicio, servicio, estado) values
         ('00000000-0000-0000-0000-000000009952', fecha_futura + interval '2 minutes', 'Espalda', 'pendiente') returning id into s;
-      insert into prueba_cancelacion_admin values ('00000000-0000-0000-0000-000000009951', '00000000-0000-0000-0000-000000009952', f, c, p, s, fecha_futura);
+      insert into prueba_cancelacion_admin values ('00000000-0000-0000-0000-000000009951', '00000000-0000-0000-0000-000000009952', f, c, l, p, s, fecha_futura);
     end $$;
     grant select on prueba_cancelacion_admin to authenticated;
     set local role authenticated;
@@ -35,7 +37,8 @@ test('solo un administrador cancela una cita confirmada vigente con motivo y lib
       select * into r from prueba_cancelacion_admin;
       begin perform public.cancelar_cita_administrador(r.futura, '   '); raise exception 'Se aceptó un motivo vacío';
       exception when invalid_parameter_value then null; end;
-      if public.cancelar_cita_administrador(r.cerca, 'Motivo') <> 'fuera_de_plazo' then raise exception 'No se respetó el límite'; end if;
+      if public.cancelar_cita_administrador(r.cerca, 'Motivo') <> 'cancelada' then raise exception 'No se permitió cancelar dentro de 24 horas'; end if;
+      if public.cancelar_cita_administrador(r.limite, 'Motivo') <> 'fuera_de_plazo' then raise exception 'No se respetó el límite de una hora'; end if;
       if public.cancelar_cita_administrador(r.propuesta, 'Motivo') <> 'no_disponible' then raise exception 'Se alteró una propuesta'; end if;
       if public.cancelar_cita_administrador(r.pendiente, 'Motivo') <> 'no_disponible' then raise exception 'Se alteró una solicitud'; end if;
       if public.cancelar_cita_administrador(r.futura, '  Motivo de prueba  ') <> 'cancelada' then raise exception 'No se canceló la cita'; end if;
@@ -44,7 +47,8 @@ test('solo un administrador cancela una cita confirmada vigente con motivo y lib
     reset role;
     do $$ begin
       if not exists (select 1 from public.citas c join prueba_cancelacion_admin p on c.id = p.futura where c.estado = 'cancelada' and c.motivo_cancelacion = 'Motivo de prueba') then raise exception 'No se conservó el motivo'; end if;
-      if not exists (select 1 from public.citas c join prueba_cancelacion_admin p on c.id = p.cerca where c.estado = 'confirmada') then raise exception 'Se modificó la cita dentro del plazo'; end if;
+      if not exists (select 1 from public.citas c join prueba_cancelacion_admin p on c.id = p.cerca where c.estado = 'cancelada' and c.motivo_cancelacion = 'Motivo') then raise exception 'No se canceló la cita dentro de 24 horas'; end if;
+      if not exists (select 1 from public.citas c join prueba_cancelacion_admin p on c.id = p.limite where c.estado = 'confirmada') then raise exception 'Se modificó la cita dentro de una hora'; end if;
       if not exists (select 1 from public.citas c join prueba_cancelacion_admin p on c.id = p.propuesta where c.estado = 'propuesta') then raise exception 'Se modificó la propuesta'; end if;
     end $$;
     rollback;`;

@@ -19,7 +19,7 @@ export async function enviarEmailBienvenida() {
         service: 'gmail', auth: { user, pass }, connectionTimeout: 10000,
         greetingTimeout: 10000, socketTimeout: 10000,
       });
-      await transport.sendMail({ from: `LITO Reservas <${user}>`, ...message });
+      await transport.sendMail({ from: { name: 'LITO masajes & fisioterapia', address: user }, ...message });
     });
   } catch {
     console.error('No se pudo iniciar el envío del email de bienvenida.');

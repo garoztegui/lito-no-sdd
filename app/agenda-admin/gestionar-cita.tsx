@@ -5,6 +5,7 @@ import { aceptarSolicitud, rechazarSolicitud } from './actions';
 import CancelarCita from './cancelar-cita';
 import ProponerHorario from './proponer-horario';
 import ConfirmarCancelacion from '../confirmar-cancelacion';
+import { EsperaFormulario } from '../espera-accion';
 
 export default function GestionarCita({ citaId, nombre, estado, dia, fechaAnterior, error }: { citaId: string; nombre: string; estado: string; dia: string; fechaAnterior?: string; error?: string }) {
   const [abierto, setAbierto] = useState(Boolean(error));
@@ -20,8 +21,8 @@ export default function GestionarCita({ citaId, nombre, estado, dia, fechaAnteri
       <h2 id={titulo}>Gestionar cita de {nombre}</h2>
       <p>Estado: {estado}</p>
       {estado === 'pendiente' && <div className="acciones-agenda">
-        <form className="accion-simple" action={aceptarSolicitud}><input type="hidden" name="citaId" value={citaId} /><input type="hidden" name="diaAgenda" value={dia} /><button type="submit">Aceptar solicitud</button></form>
-        <form className="accion-simple" ref={formularioRechazo} action={rechazarSolicitud}><input type="hidden" name="citaId" value={citaId} /><input type="hidden" name="diaAgenda" value={dia} /><button type="button" onClick={() => setConfirmarRechazo(true)}>Rechazar solicitud</button></form>
+        <form className="accion-simple" action={aceptarSolicitud}><EsperaFormulario /><input type="hidden" name="citaId" value={citaId} /><input type="hidden" name="diaAgenda" value={dia} /><button type="submit">Aceptar solicitud</button></form>
+        <form className="accion-simple" ref={formularioRechazo} action={rechazarSolicitud}><EsperaFormulario /><input type="hidden" name="citaId" value={citaId} /><input type="hidden" name="diaAgenda" value={dia} /><button type="button" onClick={() => setConfirmarRechazo(true)}>Rechazar solicitud</button></form>
         <ProponerHorario citaId={citaId} diaAgenda={dia} fechaAnterior={fechaAnterior} error={error} />
       </div>}
       {estado === 'confirmada' && <CancelarCita citaId={citaId} />}

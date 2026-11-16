@@ -20,7 +20,7 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
       ('${cliente}', '${dia} 12:00 America/Montevideo','Cuerpo entero','pendiente'),
       ('${cliente}', '${dia} 13:00 America/Montevideo','Masaje deportivo','confirmada'),
       ('${cliente}', '${dia} 14:00 America/Montevideo','Espalda','propuesta'),
-      ('${cliente}', now() + interval '2 hours 17 seconds','Cuerpo entero','confirmada'),
+      ('${cliente}', now() + interval '30 minutes','Cuerpo entero','confirmada'),
       ('${cliente}', now() - interval '1 day','Espalda','confirmada')`);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
@@ -62,7 +62,7 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
     await cerca.getByLabel('Motivo de cancelación').fill('Motivo');
     await cerca.getByRole('button', { name: 'Cancelar cita' }).click();
     await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
-    await expect(cerca.getByRole('alert')).toContainText('24 horas o menos');
+    await expect(cerca.getByRole('alert')).toContainText('menos de una hora');
     expect(sql(`select estado || ':' || motivo_cancelacion from public.citas where cliente_id='${cliente}' and servicio='Masaje deportivo'`)).toBe('cancelada:Motivo de prueba');
     expect(sql(`select count(*) from public.citas where inicio='${dia} 10:00 America/Montevideo' and estado in ('pendiente','confirmada','propuesta')`)).toBe('0');
     expect(sql(`select count(*) from public.citas where inicio='${dia} 11:00 America/Montevideo' and estado='propuesta'`)).toBe('1');

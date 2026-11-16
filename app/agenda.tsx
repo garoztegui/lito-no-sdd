@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState, type FormEvent } from 'react';
 import { conLimite } from './limite';
 import { solicitarCitaConEmail } from './email-citas-actions';
+import EsperaAccion from './espera-accion';
 
 const zona = 'America/Montevideo';
 const formato = new Intl.DateTimeFormat('en-CA', {
@@ -113,6 +114,7 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
   }
 
   return <section className="agenda" aria-labelledby="titulo-agenda">
+    {enviando && <EsperaAccion />}
     <h2 id="titulo-agenda">Solicitar una cita</h2>
     <p>Elegí un servicio, una fecha y un horario. Las sesiones duran 60 minutos.</p>
     <form onSubmit={solicitar}>
