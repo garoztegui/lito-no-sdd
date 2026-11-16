@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { expect, test } from '@playwright/test';
 
 test('confirma el borrado y muestra el motivo cuando hay citas futuras', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
   const id = crypto.randomUUID();
   const email = `borrar-${id}@example.test`;
   const nombre = `Servicio de prueba ${id}`;
@@ -21,24 +22,33 @@ test('confirma el borrado y muestra el motivo cuando hay citas futuras', async (
     await page.goto('/agenda-admin?seccion=servicios');
     await page.getByLabel('Nombre del nuevo servicio').fill(nombre);
     await page.getByRole('button', { name: 'Crear servicio' }).click();
-    const fila = page.getByRole('listitem').filter({ hasText: nombre });
-    await expect(fila).toBeVisible();
+    const selector = page.getByLabel('Seleccionar servicio');
+    await expect(selector.getByRole('option', { name: nombre })).toBeAttached();
+    await selector.selectOption({ label: nombre });
     servicioId = sql(`select id from private.servicios where nombre = '${nombre}'`);
-    const borrar = fila.getByRole('button', { name: `Borrar servicio ${nombre}` });
+    const borrar = page.getByRole('button', { name: 'Borrar servicio', exact: true });
     const dialogo = page.getByRole('dialog', { name: 'Confirmar eliminación' });
     await borrar.click();
-    await dialogo.getByRole('button', { name: 'No', exact: true }).click();
+    const medidas = await dialogo.locator('.botones-confirmacion button').evaluateAll(botones => botones.map(boton => {
+      const rect = boton.getBoundingClientRect();
+      return { ancho: rect.width, izquierda: rect.left, arriba: rect.top };
+    }));
+    expect(medidas[0].ancho).toBe(medidas[1].ancho);
+    expect(medidas[0].arriba).toBe(medidas[1].arriba);
+    const izquierdaGrupo = await dialogo.locator('.botones-confirmacion').evaluate(elemento => elemento.getBoundingClientRect().left);
+    expect(medidas[0].izquierda).toBe(izquierdaGrupo);
+    await dialogo.getByRole('button', { name: 'Cancelar', exact: true }).click();
     expect(sql(`select count(*) from private.servicios where id = '${servicioId}'`)).toBe('1');
     sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() + interval '300 days', '${nombre}', 'pendiente' from auth.users where email = '${email}'`);
     await borrar.click();
     await dialogo.getByRole('button', { name: 'Sí', exact: true }).click();
-    await expect(fila.getByRole('status')).toContainText('El servicio tiene citas futuras');
+    await expect(page.getByRole('status').filter({ hasText: 'El servicio tiene citas futuras' })).toBeVisible();
     expect(sql(`select count(*) from private.servicios where id = '${servicioId}'`)).toBe('1');
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
     await borrar.click();
     await dialogo.getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Servicio borrado.' })).toBeVisible();
-    await expect(fila).toHaveCount(0);
+    await expect(selector.getByRole('option', { name: nombre })).toHaveCount(0);
     expect(sql(`select count(*) from private.servicios where id = '${servicioId}'`)).toBe('0');
   } finally {
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);

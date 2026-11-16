@@ -51,6 +51,8 @@ innecesariamente.
 - Mantener las acciones frecuentes fáciles de encontrar y usar con el pulgar.
 - Usar botones y controles con tamaño y separación cómodos para interacción
   táctil.
+- En los modales, alinear las acciones a la izquierda, darles un ancho
+  uniforme y mantenerlas lado a lado, reduciendo su ancho en pantallas pequeñas.
 - Mantener la navegación simple y coherente. Se pueden utilizar menús
   desplegables o un menú compacto cuando ayuden a organizar las opciones.
 - Identificar claramente dónde está el usuario y cómo volver o continuar.

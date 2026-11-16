@@ -114,6 +114,7 @@ legend { margin-bottom: .75rem; font-weight: 700; }
 .acciones-historial textarea, .tabla-reservas textarea { width: 100%; min-height: 5rem; }
 dialog { width: min(100% - 2rem, 30rem); padding: 1.75rem; border: 1px solid var(--borde); border-radius: 1.1rem; background: #fff; color: var(--texto); box-shadow: 0 20px 60px rgb(13 27 73 / 25%); }
 dialog::backdrop { background: rgb(13 27 73 / 60%); }
+dialog:not(.espera-accion) button:not(.horario), dialog .boton-citas-cliente { width: min(100%, 12rem); min-width: 0; margin-inline: 0; justify-self: start; }
 
 dialog.espera-accion {
   position: fixed;
@@ -144,13 +145,12 @@ dialog.espera-accion[open] { display: grid; place-items: center; text-align: cen
 .modal-registro { max-height: 90dvh; overflow-y: auto; }
 .modal-registro form { padding: 0; border: 0; box-shadow: none; }
 .modal-registro .cancelar-registro { background: #fff; color: var(--acento-oscuro); border-color: #7083a3; }
-.botones-confirmacion { display: flex; gap: .75rem; }
+.botones-confirmacion, .acciones-registro, .acciones-datos-cliente { display: flex; justify-content: flex-start; gap: .75rem; }
+.botones-confirmacion > *, .acciones-registro > *, .acciones-datos-cliente > * { flex: 0 1 12rem; min-width: 0; }
 .modal-datos-cliente { max-height: min(90vh, 48rem); overflow-y: auto; white-space: normal; }
 .modal-datos-cliente dl { display: grid; gap: .2rem; margin: 1.25rem 0; }
 .modal-datos-cliente dt { margin-top: .7rem; color: var(--secundario); font-size: .85rem; font-weight: 700; }
 .modal-datos-cliente dd { margin: 0; overflow-wrap: anywhere; }
-.acciones-datos-cliente { display: flex; flex-wrap: wrap; gap: .75rem; }
-.acciones-datos-cliente > * { flex: 1 1 10rem; }
 .acciones-datos-cliente .cerrar-datos-cliente { background: #fff; color: var(--acento-oscuro); border-color: #7083a3; }
 .acciones-datos-cliente .boton-citas-cliente { background: var(--acento); color: #fff; }
 .botones-confirmacion button:first-child { background: #fff; color: var(--acento-oscuro); border-color: #aab8df; }

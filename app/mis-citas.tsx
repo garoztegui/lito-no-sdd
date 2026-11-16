@@ -97,9 +97,10 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
 
   useEffect(() => {
     const instanteActual = Date.now();
-    const proximoVencimiento = citas
+    const vencimientos = citas
       .filter(cita => cita.estado === 'pendiente' || cita.estado === 'propuesta')
-      .map(cita => Date.parse(cita.inicio) - 24 * 60 * 60 * 1000)
+      .map(cita => Date.parse(cita.inicio) - 24 * 60 * 60 * 1000);
+    const proximoVencimiento = [...vencimientos, ...citas.map(cita => Date.parse(cita.inicio))]
       .filter(vencimiento => vencimiento > instanteActual)
       .sort((a, b) => a - b)[0];
     if (proximoVencimiento === undefined) return;
@@ -114,7 +115,15 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
 
   const estadoVisible = (cita: Cita) => ahora !== null && (cita.estado === 'pendiente' || cita.estado === 'propuesta')
     && Date.parse(cita.inicio) <= ahora + 24 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
-  const citasFiltradas = citas.filter(cita => filtro === 'todos' || estadoVisible(cita) === filtro);
+  const citasFiltradas = citas.filter(cita => filtro === 'todos' || estadoVisible(cita) === filtro)
+    .sort((a, b) => {
+      const inicioA = Date.parse(a.inicio);
+      const inicioB = Date.parse(b.inicio);
+      const futuraA = inicioA > (ahora ?? 0);
+      const futuraB = inicioB > (ahora ?? 0);
+      if (futuraA !== futuraB) return futuraA ? -1 : 1;
+      return futuraA ? inicioA - inicioB : inicioB - inicioA;
+    });
 
   return <section className="mis-citas" aria-labelledby="titulo-mis-citas">
     {respondiendo && <EsperaAccion />}

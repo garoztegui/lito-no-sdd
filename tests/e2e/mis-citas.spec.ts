@@ -13,6 +13,27 @@ async function ingresarComoCliente(page: Page) {
   await expect(registro).toBeHidden();
 }
 
+test('ordena primero las citas futuras próximas y después las pasadas recientes', async ({ page }) => {
+  await ingresarComoCliente(page);
+  const ahora = Date.now();
+  const cita = (id: string, dias: number, servicio: string) => ({
+    id, inicio: new Date(ahora + dias * 86400000).toISOString(), servicio, estado: 'confirmada',
+  });
+  await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
+    cita('1', 10, 'Futura lejana'), cita('2', -10, 'Pasada antigua'),
+    cita('3', 2, 'Futura próxima'), cita('4', -2, 'Pasada reciente'),
+  ] }));
+  await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
+  const filas = page.getByRole('region', { name: 'Mis citas' }).getByRole('listitem');
+  await expect(filas).toHaveCount(4);
+  for (const [indice, nombre] of ['Futura próxima', 'Futura lejana', 'Pasada reciente', 'Pasada antigua'].entries()) {
+    await expect(filas.nth(indice)).toContainText(nombre);
+  }
+  await page.getByLabel('Filtrar por estado').selectOption('confirmada');
+  await expect(filas.first()).toContainText('Futura próxima');
+});
+
 test('un cliente sin citas ve el mensaje de lista vacía', async ({ page }) => {
   await ingresarComoCliente(page);
   await page.reload();

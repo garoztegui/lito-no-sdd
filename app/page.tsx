@@ -120,8 +120,8 @@ export default function Home() {
           <option>Prefiero no especificar</option>
         </select></label>
         <label>Contraseña (obligatoria)<input name="password" type="password" required /></label>
-        <BotonRegistro pending={registrando} />
-        <button type="button" className="cancelar-registro" disabled={registrando} onClick={() => dialogoRegistro.current?.close()}>Cancelar</button>
+        <div className="acciones-registro"><BotonRegistro pending={registrando} />
+        <button type="button" className="cancelar-registro" disabled={registrando} onClick={() => dialogoRegistro.current?.close()}>Cancelar</button></div>
         {mensaje !== 'Ingresá tu nombre completo.' && mensaje !== 'Ingresá tu teléfono.' && <p role="status">{mensaje}</p>}
       </form>
       </dialog>}
