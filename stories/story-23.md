@@ -1,23 +1,23 @@
-# Historia 23: Asociar o desasociar Google
+# Historia 23: ¿Cómo funciona?
 
 ## Historia
 
-Como cliente, quiero asociar o desasociar mi cuenta de Google desde la configuración, para gestionar cómo ingreso a mi cuenta.
+Como cliente o administrador, quiero acceder a «¿Cómo funciona?» desde la parte superior del menú desplegable, para entender el flujo de reservas con una explicación breve, divertida y con emojis.
 
 ## Criterios de aceptación
 
-- [ ] Dado que tengo una cuenta en LITO sin Google asociado, cuando asocio mi cuenta de Google desde Configuración, entonces puedo ingresar a la misma cuenta usando Google.
-- [ ] Dado que tengo Google asociado y una contraseña creada, cuando desasocio Google desde Configuración, entonces puedo seguir ingresando con mi email y contraseña.
-- [ ] Dado que Google es mi único medio de acceso, cuando intento desasociarlo, entonces veo un modal que me indica que primero debo crear una contraseña y Google permanece asociado.
+- [ ] Dado que ingresé como cliente o administrador, cuando abro el menú desplegable, entonces veo «¿Cómo funciona?» en la parte superior.
+- [ ] Dado que selecciono «¿Cómo funciona?», cuando se abre la pantalla, entonces veo la misma explicación para ambos tipos de usuario, con palabras divertidas y emojis.
+- [ ] Dado que leo la explicación, cuando consulto el flujo, entonces entiendo cómo se solicita una cita, cómo responde el administrador, qué hacer ante una propuesta y cuáles son los plazos de vencimiento y cancelación.
 
 ## Plan
 
-- Mostrar en Configuración si Google está asociado y la acción disponible.
-- Permitir asociar o desasociar Google desde la cuenta del cliente.
-- Impedir la desasociación cuando no exista una contraseña y explicar el motivo en un modal.
-- Verificar que la cuenta y sus citas se conserven, y que los medios de acceso funcionen según corresponda.
+- Agregar el acceso al menú compartido.
+- Preparar una explicación breve y ordenada según las reglas vigentes.
+- Mostrarla cómodamente en celular y permitir volver.
+- Verificar el acceso como cliente y como administrador, y revisar que los plazos sean correctos.
 
 ## Fuera de alcance
 
-- Crear una contraseña: historia 22.
-- Asociar otros proveedores de acceso.
+- Cambiar las reglas de reserva o cancelación.
+- Agregar las secciones de ubicación o medios de pago.

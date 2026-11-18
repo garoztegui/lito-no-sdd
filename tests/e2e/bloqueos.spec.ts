@@ -14,7 +14,7 @@ test('el administrador bloquea y libera un horario en la agenda', async ({ page 
   let idBloqueo = '';
   try {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
     await registro.getByLabel('Email').fill(email);
@@ -64,7 +64,7 @@ test('el administrador decide sobre las citas afectadas antes de bloquear', asyn
   let bloqueoId = '';
   try {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
     await registro.getByLabel('Email').fill(email);

@@ -17,14 +17,14 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   conocer los datos de quien reservó.
 - Una solicitud pendiente de aprobación del administrador o una propuesta de
   horario pendiente de respuesta del cliente se cancela automáticamente al
-  alcanzar las 24 horas previas a su inicio y libera el horario.
+  alcanzar las 4 horas previas a su inicio y libera el horario.
 - Los administradores pueden aceptar, rechazar o proponer otro horario.
 - Al proponer otro horario se libera el original y se ocupa el propuesto. El
   cliente recibe un email y, tras iniciar sesión, puede aceptar o rechazar la
   propuesta antes de su vencimiento, sin contrapropuestas. Si acepta, la cita
   queda confirmada; si rechaza, se cancela.
 - Los clientes solo pueden acceder a sus propios datos y citas.
-- El cliente no puede cancelar una cita confirmada cuando faltan 24 horas o menos.
+- El cliente no puede cancelar una cita cuando faltan 12 horas o menos, salvo al rechazar una propuesta de horario.
 - El administrador puede cancelar una cita confirmada hasta una hora antes de su inicio
   indicando el motivo, que se envía por email al cliente. No puede proponer
   otro horario para una cita confirmada.
@@ -55,7 +55,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   consecutivos.
 - Mientras no se configure la disponibilidad, se ofrecen turnos de lunes a
   viernes de 7:00 a 19:00, con inicios cada 60 minutos.
-- Se pueden solicitar turnos con al menos 24 horas de anticipación y hasta tres
+- Se pueden solicitar turnos con al menos 4 horas de anticipación y hasta tres
   meses a futuro.
 - Las fechas y horas se muestran en `America/Montevideo`.
 - Deben impedirse las reservas superpuestas incluso ante solicitudes simultáneas,

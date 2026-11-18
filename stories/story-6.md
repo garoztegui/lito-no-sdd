@@ -9,7 +9,7 @@ Como administrador, quiero proponer otro horario para una solicitud pendiente, p
 - [x] Dada una solicitud pendiente, cuando el administrador propone un horario disponible, entonces la solicitud pasa a tener el horario propuesto y ese horario queda ocupado.
 - [x] Cuando se propone otro horario, entonces el horario original queda disponible.
 - [x] Dada una solicitud que ya no está pendiente o un horario alternativo que dejó de estar disponible, cuando el administrador intenta proponerlo, entonces la solicitud no se modifica y se informa que no se pudo actualizar.
-- [x] Dada una solicitud pendiente dentro de las 24 horas previas a su inicio, cuando el administrador intenta proponer otro horario, entonces se cancela según la regla de vencimiento existente.
+- [x] Dada una solicitud pendiente dentro de las 4 horas previas a su inicio, cuando el administrador intenta proponer otro horario, entonces se cancela según la regla de vencimiento existente.
 
 ## Plan
 

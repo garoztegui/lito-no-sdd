@@ -12,7 +12,7 @@ test('el administrador bloquea servicios con citas y borra servicios sin citas f
   let pasadoId = '';
   try {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
     await registro.getByLabel('Email').fill(email);

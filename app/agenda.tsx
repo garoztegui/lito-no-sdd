@@ -43,9 +43,9 @@ export function limiteMaximo(ahora: Date) {
 
 export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
   const ahora = new Date();
-  const minimo = ahora.getTime() + 24 * 60 * 60 * 1000;
+  const minimo = ahora.getTime() + 4 * 60 * 60 * 1000;
   const maximo = limiteMaximo(ahora);
-  const [fecha, setFecha] = useState(() => fechaTexto(new Date(Date.now() + 86400000)));
+  const [fecha, setFecha] = useState(() => fechaTexto(new Date(Date.now() + 4 * 60 * 60 * 1000)));
   const [servicio, setServicio] = useState('');
   const [seleccion, setSeleccion] = useState<number | null>(null);
   const [ocupados, setOcupados] = useState<number[]>([]);

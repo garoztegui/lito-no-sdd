@@ -58,8 +58,17 @@ export default function ConfiguracionCliente() {
       const { error } = await supabase.auth.updateUser({ password: clave });
       if (error) throw error;
       formulario.reset();
-      setMensajeClave('Contraseña actualizada.');
-    } catch { setMensajeClave('No se pudo cambiar la contraseña. Verificá los requisitos e intentá nuevamente.'); }
+      setMensajeClave('Contraseña guardada. Ya podés ingresar con tu email y contraseña.');
+    } catch (error) {
+      const claveDebil = typeof error === 'object' && error !== null && 'code' in error && error.code === 'weak_password';
+      const motivos = claveDebil && 'reasons' in error && Array.isArray(error.reasons) ? error.reasons : [];
+      const indicaciones = [
+        motivos.includes('length') && 'Elegí una contraseña más larga.',
+        motivos.includes('characters') && 'Combiná mayúsculas, minúsculas, números y símbolos.',
+        motivos.includes('pwned') && 'Esa contraseña apareció en filtraciones. Elegí otra.',
+      ].filter(Boolean).join(' ');
+      setMensajeClave(claveDebil ? indicaciones || 'La contraseña no cumple los requisitos de seguridad. Elegí una más segura.' : 'No se pudo guardar la contraseña. Intentá nuevamente.');
+    }
     finally { setOcupado(false); }
   }
 
@@ -75,10 +84,11 @@ export default function ConfiguracionCliente() {
         {mensaje && <p role="status">{mensaje}</p>}
       </form>
       <form onSubmit={cambiarClave}>
-        <h3>Cambiar contraseña</h3>
+        <h3>Crear o cambiar contraseña</h3>
+        <p>Usá al menos 6 caracteres.</p>
         <label>Nueva contraseña<input name="nueva" type="password" autoComplete="new-password" minLength={6} required /></label>
         <label>Confirmar nueva contraseña<input name="confirmacion" type="password" autoComplete="new-password" minLength={6} required /></label>
-        <button type="submit" disabled={ocupado}>Cambiar contraseña</button>
+        <button type="submit" disabled={ocupado}>Guardar contraseña</button>
         {mensajeClave && <p role="status">{mensajeClave}</p>}
       </form>
     </>}

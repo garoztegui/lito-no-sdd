@@ -6,7 +6,7 @@ test('el administrador revisa y confirma una reducción de disponibilidad', asyn
   const email = `story9-${crypto.randomUUID()}@example.test`;
   const sql = (statement: string) => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', statement]);
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
   await registro.getByLabel('Email').fill(email);
@@ -52,7 +52,7 @@ test('la agenda ofrece los horarios configurados para el día elegido', async ({
   const sql = (statement: string) => execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', statement]);
   try {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
     await registro.getByLabel('Email').fill(email);

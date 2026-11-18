@@ -21,4 +21,4 @@ Como cliente, quiero crear una cuenta e iniciar sesión con Google, para acceder
 ## Fuera de alcance
 
 - Crear una contraseña para cuentas de Google: historia 22.
-- Asociar o desasociar Google desde Configuración: historia 23.
+- Asociar o desasociar Google desde Configuración.

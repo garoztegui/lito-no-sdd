@@ -7,7 +7,7 @@ test('el administrador edita su cuenta y cierra sesión desde la barra', async (
   try {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Admin Prueba');
     await registro.getByLabel('Email').fill(email);

@@ -6,7 +6,7 @@ test('un cliente accede a su cuenta con email y contraseña', async ({ browser }
   const registro = await browser.newContext({ baseURL: 'http://localhost:3000' });
   const paginaRegistro = await registro.newPage();
   await paginaRegistro.goto('/');
-  await paginaRegistro.getByRole('link', { name: 'CREAR UNA' }).click();
+  await paginaRegistro.getByRole('link', { name: 'Crear cuenta.' }).click();
   await paginaRegistro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await paginaRegistro.getByLabel('Teléfono').fill('099123456');
   await paginaRegistro.getByRole('form', { name: 'Registro' }).getByLabel('Email').fill(email);
@@ -56,7 +56,7 @@ test('el ingreso muestra que está procesando la solicitud', async ({ page }) =>
 
 test('la cuenta sigue accesible después de recargar', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);

@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 
 test('el registro conserva la cuenta aunque falle el único intento de bienvenida', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const form = page.getByRole('form', { name: 'Registro' });
   await form.getByLabel('Nombre completo').fill('Cliente de Prueba');
   await form.getByLabel('Email').fill(`bienvenida-${crypto.randomUUID()}@example.test`);

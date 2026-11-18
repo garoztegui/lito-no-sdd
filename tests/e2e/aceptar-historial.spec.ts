@@ -12,7 +12,7 @@ test('permite aceptar y confirmar el rechazo desde el historial', async ({ page 
     sql(`insert into auth.users (id,email,raw_user_meta_data) values ('${cliente}','historial-${cliente}@example.test','{"nombre":"Cliente Historial","telefono":"099111222","sexo":"Mujer"}');
       insert into public.citas (cliente_id,inicio,servicio,estado) values ('${cliente}', '${dia} 10:00 America/Montevideo','Espalda','pendiente'), ('${cliente}', '${dia} 12:00 America/Montevideo','Cuerpo entero','pendiente')`);
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Admin Prueba');
     await registro.getByLabel('Email').fill(email);

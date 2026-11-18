@@ -17,7 +17,7 @@ test('muestra los datos en tabla ordenada por nombre y permite ver las citas', a
       ('${cuarto}', 'tabla-cuatro-${sufijo}@example.test', '{"nombre":"Cliente Cuatro","telefono":"+598 099 111 222","sexo":"Mujer"}')`);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador Tabla');
     await registro.getByLabel('Email').fill(admin);

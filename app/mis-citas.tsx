@@ -16,7 +16,7 @@ function AvisoCancelacion({ cerrar }: { cerrar: () => void }) {
   useEffect(() => { dialogo.current?.showModal(); }, []);
   return <dialog ref={dialogo} aria-labelledby="titulo-aviso-cancelacion" onCancel={event => { event.preventDefault(); cerrar(); }}>
     <h2 id="titulo-aviso-cancelacion">Cancelación no disponible</h2>
-    <p>Ya no podés cancelar esta cita: faltan 24 horas o menos.</p>
+    <p>Ya no podés cancelar esta cita: faltan 12 horas o menos.</p>
     <div className="botones-confirmacion"><button type="button" onClick={cerrar} autoFocus>Cerrar</button></div>
   </dialog>;
 }
@@ -99,7 +99,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
     const instanteActual = Date.now();
     const vencimientos = citas
       .filter(cita => cita.estado === 'pendiente' || cita.estado === 'propuesta')
-      .map(cita => Date.parse(cita.inicio) - 24 * 60 * 60 * 1000);
+      .map(cita => Date.parse(cita.inicio) - 4 * 60 * 60 * 1000);
     const proximoVencimiento = [...vencimientos, ...citas.map(cita => Date.parse(cita.inicio))]
       .filter(vencimiento => vencimiento > instanteActual)
       .sort((a, b) => a - b)[0];
@@ -114,7 +114,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
   }, [citas, ahora]);
 
   const estadoVisible = (cita: Cita) => ahora !== null && (cita.estado === 'pendiente' || cita.estado === 'propuesta')
-    && Date.parse(cita.inicio) <= ahora + 24 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
+    && Date.parse(cita.inicio) <= ahora + 4 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
   const citasFiltradas = citas.filter(cita => filtro === 'todos' || estadoVisible(cita) === filtro)
     .sort((a, b) => {
       const inicioA = Date.parse(a.inicio);
@@ -143,7 +143,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
           <p>Estado: <strong>{estadoActual.charAt(0).toUpperCase() + estadoActual.slice(1)}</strong></p>
           {(estadoActual === 'pendiente' || estadoActual === 'confirmada') && ahora !== null && Date.parse(cita.inicio) > ahora &&
             <button type="button" disabled={respondiendo} onClick={() => {
-              if (cita.estado === 'confirmada' && Date.parse(cita.inicio) <= Date.now() + 24 * 60 * 60 * 1000) setAvisoCancelacion(true);
+              if (cita.estado === 'confirmada' && Date.parse(cita.inicio) <= Date.now() + 12 * 60 * 60 * 1000) setAvisoCancelacion(true);
               else setConfirmacion({ id: cita.id, rechazo: false });
             }}>Cancelar cita</button>}
           {estadoActual === 'propuesta' && <div className="acciones-cita">

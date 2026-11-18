@@ -15,7 +15,7 @@ El administrador se configura manualmente mediante su bandera en la base de
 datos; por ahora no hay gestión de accesos administrativos. Para registrarse se
 solicitan nombre completo, email, teléfono, sexo y contraseña. Un servicio no
 puede retirarse si tiene reservas futuras. Una cita no puede cancelarse dentro
-de las 24 horas anteriores, salvo que el cliente rechace una propuesta de
+de las 12 horas anteriores, salvo que el cliente rechace una propuesta de
 horario, lo que cancela la cita incluso dentro de ese plazo. Consultar
 `docs/vision.md` para el detalle de las reglas y las decisiones pendientes.
 
@@ -28,7 +28,7 @@ horario, lo que cancela la cita incluso dentro de ese plazo. Consultar
 5. Como administrador, quiero aceptar o rechazar solicitudes, para gestionar las citas pendientes. Requiere: #2.
 6. Como administrador, quiero proponer otro horario, para ofrecer una alternativa al cliente. Requiere: #2.
 7. Como cliente, quiero recibir por email una propuesta de horario y aceptarla o rechazarla, para resolver mi solicitud. Requiere: #6.
-8. Como cliente, quiero cancelar una cita respetando el límite de 24 horas, para liberar un horario que no voy a utilizar. Requiere: #2.
+8. Como cliente, quiero cancelar una cita respetando el límite de 12 horas, para liberar un horario que no voy a utilizar. Requiere: #2.
 9. Como administrador, quiero configurar la disponibilidad semanal habitual, para definir cuándo se pueden solicitar citas.
 10. Como administrador, quiero bloquear horarios o días específicos, para impedir nuevas solicitudes en esos períodos.
 11. Como administrador, quiero administrar el catálogo de servicios, para mantener actualizadas las opciones disponibles.

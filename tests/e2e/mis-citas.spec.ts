@@ -3,7 +3,7 @@ import { fechaConTurnoDisponible } from './horarios';
 
 async function ingresarComoCliente(page: Page) {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -157,7 +157,7 @@ test('el cliente cancela su solicitud y el horario vuelve a estar disponible', a
 
 test('una cita confirmada dentro del límite informa que no puede cancelarse', async ({ page }) => {
   await ingresarComoCliente(page);
-  const inicio = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString();
+  const inicio = new Date(Date.now() + 11 * 60 * 60 * 1000).toISOString();
   await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
     { id: '11111111-1111-1111-1111-111111111111', inicio, servicio: 'Espalda', estado: 'confirmada' },
   ] }));
@@ -168,7 +168,7 @@ test('una cita confirmada dentro del límite informa que no puede cancelarse', a
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await citas.getByRole('button', { name: 'Cancelar cita' }).click();
   const aviso = page.getByRole('dialog', { name: 'Cancelación no disponible' });
-  await expect(aviso).toContainText('Ya no podés cancelar esta cita: faltan 24 horas o menos.');
+  await expect(aviso).toContainText('Ya no podés cancelar esta cita: faltan 12 horas o menos.');
   await aviso.getByRole('button', { name: 'Cerrar' }).click();
   expect(cancelaciones).toBe(0);
   await expect(citas.getByRole('listitem')).toContainText('Confirmada');
@@ -186,7 +186,7 @@ test('si el servidor rechaza la cancelación por plazo vencido, muestra el aviso
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await citas.getByRole('button', { name: 'Cancelar cita' }).click();
   await page.getByRole('dialog', { name: 'Confirmar cancelación' }).getByRole('button', { name: 'Sí', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Cancelación no disponible' })).toContainText('faltan 24 horas o menos');
+  await expect(page.getByRole('dialog', { name: 'Cancelación no disponible' })).toContainText('faltan 12 horas o menos');
   await expect(citas.getByRole('listitem')).toContainText('Confirmada');
 });
 

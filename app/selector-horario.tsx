@@ -9,9 +9,9 @@ export default function SelectorHorario({ onChange, disabled = false, initialVal
   onChange: (horario: string) => void; disabled?: boolean; initialValue?: string;
 }) {
   const ahora = new Date();
-  const minimo = ahora.getTime() + 86400000;
+  const minimo = ahora.getTime() + 4 * 60 * 60 * 1000;
   const maximo = limiteMaximo(ahora);
-  const [fecha, setFecha] = useState(() => initialValue.slice(0, 10) || fechaTexto(new Date(Date.now() + 86400000)));
+  const [fecha, setFecha] = useState(() => initialValue.slice(0, 10) || fechaTexto(new Date(Date.now() + 4 * 60 * 60 * 1000)));
   const [seleccion, setSeleccion] = useState(initialValue);
   const [ocupados, setOcupados] = useState<number[]>([]);
   const [disponibilidad, setDisponibilidad] = useState<{ dia: number; hora: number }[]>([]);

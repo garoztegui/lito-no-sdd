@@ -5,7 +5,7 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
   await page.setViewportSize({ width: 390, height: 844 });
   const email = `story4-${crypto.randomUUID()}@example.com`;
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
   await registro.getByLabel('Email').fill(email);
@@ -55,7 +55,7 @@ test('el administrador puede proponer otro horario para una solicitud pendiente'
   await page.setViewportSize({ width: 390, height: 844 });
   const email = `story6-${crypto.randomUUID()}@example.com`;
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
   await registro.getByLabel('Email').fill(email);

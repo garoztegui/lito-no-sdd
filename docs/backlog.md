@@ -7,7 +7,7 @@
 5. Como administrador, quiero aceptar o rechazar solicitudes, para gestionar las citas pendientes. Requiere: #2.
 6. Como administrador, quiero proponer otro horario, para ofrecer una alternativa al cliente. Requiere: #2.
 7. Como cliente, quiero consultar una propuesta de horario y aceptarla o rechazarla, para resolver mi solicitud. Requiere: #6.
-8. Como cliente, quiero cancelar una cita respetando el límite de 24 horas, para liberar un horario que no voy a utilizar. Requiere: #2.
+8. Como cliente, quiero cancelar una cita respetando el límite de 12 horas, para liberar un horario que no voy a utilizar. Requiere: #2.
 9. Como administrador, quiero configurar la disponibilidad semanal habitual, para definir cuándo se pueden solicitar citas.
 10. Como administrador, quiero bloquear horarios o días específicos, para impedir nuevas solicitudes en esos períodos.
 11. Como administrador, quiero administrar el catálogo de servicios, para mantener actualizadas las opciones disponibles.
@@ -22,4 +22,6 @@
 20. [x] Como cliente, quiero navegar entre mis citas, las reservas y la configuración de mi cuenta, para gestionar mis datos y encontrar mis citas. Requiere: #1, #2 y #3.
 21. Como cliente, quiero crear una cuenta e iniciar sesión con Google, para acceder sin usar una contraseña de LITO.
 22. Como cliente que creó su cuenta con Google, quiero crear una contraseña desde la configuración, para poder acceder también con email y contraseña. Requiere: #21.
-23. Como cliente, quiero asociar o desasociar mi cuenta de Google desde la configuración, para gestionar cómo ingreso a mi cuenta. Requiere: #21.
+23. Como cliente o administrador, quiero acceder a «¿Cómo funciona?» desde la parte superior del menú desplegable, para entender el flujo de reservas con una explicación breve, divertida y con emojis.
+24. Como cliente, quiero consultar desde el menú desplegable la dirección de LITO, Isla de Gaspar 2445, Montevideo, Uruguay, en un mapa de Google Maps con un marcador, para saber dónde se realizan las citas.
+25. Como cliente, quiero consultar en «Medios de pago y contacto» del menú desplegable el teléfono de Lito (094 553 211) y los medios de pago —efectivo y cuenta de José Luis en BANCO REPUBLICA $ 00040248300001—, para saber cómo contactarlo y pagar mi cita; el teléfono aparece arriba de los medios de pago.

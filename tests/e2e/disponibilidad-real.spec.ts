@@ -30,7 +30,7 @@ test('guardar un horario semanal libre persiste y deja de ofrecerse a clientes',
     if (!resultado) throw new Error('El horario ya estaba disponible');
     insertado = true;
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador de prueba');
     await registro.getByLabel('Email').fill(email);
@@ -55,7 +55,7 @@ test('guardar un horario semanal libre persiste y deja de ofrecerse a clientes',
     try {
       const cliente = await contextoCliente.newPage();
       await cliente.goto('/');
-      await cliente.getByRole('link', { name: 'CREAR UNA' }).click();
+      await cliente.getByRole('link', { name: 'Crear cuenta.' }).click();
       const formulario = cliente.getByRole('form', { name: 'Registro' });
       await formulario.getByLabel('Nombre completo').fill('Cliente de prueba');
       await formulario.getByLabel('Email').fill(emailCliente);

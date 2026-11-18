@@ -126,7 +126,7 @@ export default function Home() {
         <BotonIngreso pending={ingresando} />
         <button type="button" className="boton-google" disabled={ingresando} onClick={() => void ingresarConGoogle()}><img src="/images/google-g.png" width="20" height="20" alt="" />Continuar con Google</button>
         <p role="alert">{errorIngreso}</p>
-        <p>¿No tenés cuenta? <a href="#crear-cuenta" onClick={event => { event.preventDefault(); setMensaje(''); setRegistroAbierto(true); }}>CREAR UNA</a></p>
+        <p>¿No tenés cuenta? <a href="#crear-cuenta" onClick={event => { event.preventDefault(); setMensaje(''); setRegistroAbierto(true); }}>Crear cuenta.</a></p>
       </form>
       {registroAbierto && <dialog ref={dialogoRegistro} className="modal-registro" aria-labelledby="titulo-registro" onClose={() => setRegistroAbierto(false)} onCancel={event => { if (registrando) event.preventDefault(); }}>
       <form aria-label="Registro" onSubmit={registrar}>

@@ -10,7 +10,7 @@ test('muestra el mes y las reservas de un día en orden de hora', async ({ page 
   const mes = dia.slice(0, 7);
   try {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Cliente Calendario');
     await registro.getByLabel('Email').fill(email);

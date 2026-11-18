@@ -6,7 +6,7 @@ Como cliente, quiero solicitar una cita en un horario disponible, para reservar 
 
 ## Criterios de aceptación
 
-- [x] Dado que inicié sesión, cuando consulto los turnos, entonces veo los horarios de lunes a viernes entre las 7:00 y las 19:00, con inicios cada 60 minutos, para citas que comiencen al menos 24 horas después del momento de la consulta y hasta tres meses a futuro. Los horarios ocupados se distinguen sin mostrar datos de otros clientes.
+- [x] Dado que inicié sesión, cuando consulto los turnos, entonces veo los horarios de lunes a viernes entre las 7:00 y las 19:00, con inicios cada 60 minutos, para citas que comiencen al menos 4 horas después del momento de la consulta y hasta tres meses a futuro. Los horarios ocupados se distinguen sin mostrar datos de otros clientes.
 - [x] Dado que elijo uno de los servicios disponibles y un horario libre, cuando envío la solicitud, entonces recibo una confirmación y mi cita queda pendiente, ocupando ese horario durante 60 minutos.
 - [x] Dado que un horario ya está ocupado o deja de estar disponible mientras lo solicito, cuando intento reservarlo, entonces se me informa que no se pudo completar la solicitud y no se crea una cita superpuesta.
 - [x] Dada una cuenta administradora, cuando accede a la aplicación o intenta solicitar una cita, no puede reservar; la base de datos rechaza también las solicitudes directas.

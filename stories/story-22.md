@@ -20,4 +20,4 @@ Como cliente que creó su cuenta con Google, quiero crear una contraseña desde 
 ## Fuera de alcance
 
 - Recuperar una contraseña olvidada.
-- Asociar o desasociar Google: historia 23.
+- Asociar o desasociar Google.

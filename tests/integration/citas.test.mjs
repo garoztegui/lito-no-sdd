@@ -93,7 +93,7 @@ test('una solicitud vencida se cancela en vez de convertirse en propuesta', asyn
     execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
       `update public.perfiles set es_administrador = true where id = '${user.id}'`]);
     const { data: cita } = await supabase.from('citas').select('id').eq('inicio', original).single();
-    const vencimiento = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString();
+    const vencimiento = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
     execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
       `update public.citas set inicio = '${vencimiento}' where id = '${cita.id}'`]);
 
@@ -311,7 +311,7 @@ test('aceptar una propuesta confirma una sola vez y una propuesta vencida se can
     sql(`update public.citas set estado = 'propuesta' where id = '${cita.id}'`);
     const respuestas = await Promise.all(['aceptar', 'rechazar'].map(p_decision => supabase.rpc('responder_propuesta', { p_cita_id: cita.id, p_decision })));
     assert.ok(['confirmada,no_vigente', 'cancelada,no_vigente'].includes(respuestas.map(r => r.data).sort().join(',')));
-    sql(`update public.citas set estado = 'propuesta', inicio = now() + interval '23 hours' where id = '${cita.id}'`);
+    sql(`update public.citas set estado = 'propuesta', inicio = now() + interval '3 hours' where id = '${cita.id}'`);
     const vencida = await supabase.rpc('responder_propuesta', { p_cita_id: cita.id, p_decision: 'aceptar' });
     assert.ok(['cancelada', 'no_vigente'].includes(vencida.data));
     assert.equal((await supabase.from('citas').select('estado').eq('id', cita.id).single()).data.estado, 'cancelada');
@@ -327,8 +327,8 @@ test('el vencimiento programado cancela propuestas y solicitudes y libera sus ho
     const resultado = execFileSync('docker', ['exec', 'supabase_db_litov2', 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-t', '-A', '-c', `
       begin;
       insert into public.citas (cliente_id, inicio, servicio, estado) values
-        ('${user.id}', now() + interval '23 hours', 'Espalda', 'propuesta'),
-        ('${user.id}', now() + interval '23 hours 1 second', 'Espalda', 'pendiente');
+        ('${user.id}', now() + interval '3 hours', 'Espalda', 'propuesta'),
+        ('${user.id}', now() + interval '3 hours 1 second', 'Espalda', 'pendiente');
       select private.expirar_solicitudes_pendientes();
       select count(*) from public.citas where cliente_id = '${user.id}' and estado = 'cancelada';
       select count(*) from public.citas where cliente_id = '${user.id}' and estado in ('pendiente', 'propuesta', 'confirmada');
@@ -363,7 +363,7 @@ test('el cliente cancela sus citas vigentes sin poder cancelar citas ajenas o co
     assert.equal((await propietario.rpc('horarios_ocupados', { desde: inicio, hasta: new Date(Date.parse(inicio) + 3600000).toISOString() })).data.length, 0);
     sql(`update public.citas set estado = 'confirmada' where id = '${cita.id}'`);
     assert.equal((await propietario.rpc('cancelar_cita_cliente', { p_cita_id: cita.id })).data, 'cancelada');
-    sql(`update public.citas set estado = 'confirmada', inicio = now() + interval '23 hours' where id = '${cita.id}'`);
+    sql(`update public.citas set estado = 'confirmada', inicio = now() + interval '11 hours' where id = '${cita.id}'`);
     assert.equal((await propietario.rpc('cancelar_cita_cliente', { p_cita_id: cita.id })).data, 'fuera_de_plazo');
     assert.equal((await propietario.from('citas').select('estado').eq('id', cita.id).single()).data.estado, 'confirmada');
   } finally {

@@ -8,7 +8,7 @@ test.skip(!/^supabase_db_litov2-story13-[a-f0-9]{8}$/.test(contenedor) || url !=
 
 async function registrar(page: Page, email: string) {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cuenta de Prueba');
   await registro.getByLabel('Email').fill(email);

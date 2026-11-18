@@ -2,7 +2,7 @@
 
 test('email y contraseña son obligatorios antes de enviar el registro', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Teléfono').fill('099123456');
@@ -20,7 +20,7 @@ test('email y contraseña son obligatorios antes de enviar el registro', async (
 
 test('el formulario de registro solicita los cinco datos', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
 
   await expect(page.getByLabel('Nombre completo')).toBeVisible();
   await expect(page.getByRole('form', { name: 'Registro' }).getByLabel('Email')).toBeVisible();
@@ -31,7 +31,7 @@ test('el formulario de registro solicita los cinco datos', async ({ page }) => {
 
 test('el campo sexo ofrece las tres opciones acordadas', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
 
   await expect(page.getByLabel('Sexo').locator('option')).toHaveText([
     'Hombre',
@@ -42,7 +42,7 @@ test('el campo sexo ofrece las tres opciones acordadas', async ({ page }) => {
 
 test('crea una cuenta y obtiene sesión sin confirmar el email', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   await page.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await page.getByLabel('Teléfono').fill('099123456');
   await page.getByRole('form', { name: 'Registro' }).getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -59,7 +59,7 @@ test('crea una cuenta y obtiene sesión sin confirmar el email', async ({ page }
 
 test('el cliente registrado puede consultar sus datos personales', async ({ page, request }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   await page.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await page.getByRole('form', { name: 'Registro' }).getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await page.getByLabel('Teléfono').fill('099123456');
@@ -82,7 +82,7 @@ test('un cliente no puede consultar el perfil de otro', async ({ browser, reques
     const context = await browser.newContext({ baseURL: 'http://localhost:3000' });
     const page = await context.newPage();
     await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     await page.getByLabel('Nombre completo').fill(nombre);
     await page.getByRole('form', { name: 'Registro' }).getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
     await page.getByLabel('Teléfono').fill('099123456');
@@ -102,7 +102,7 @@ test('un cliente no puede consultar el perfil de otro', async ({ browser, reques
 
 test('un usuario sin sesión no puede consultar perfiles', async ({ page, request }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   await page.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await page.getByLabel('Teléfono').fill('099123456');
   await page.getByRole('form', { name: 'Registro' }).getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -119,7 +119,7 @@ test('un usuario sin sesión no puede consultar perfiles', async ({ page, reques
 
 test('el registro con contraseña inválida muestra un error', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -132,7 +132,7 @@ test('el registro con contraseña inválida muestra un error', async ({ page }) 
 test('el registro completo crea la cuenta sin confirmar el email', async ({ page, request }) => {
   const email = `prueba-${crypto.randomUUID()}@example.com`;
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(email);
@@ -159,7 +159,7 @@ test('el registro muestra que está procesando la solicitud', async ({ page }) =
   const espera = new Promise<void>(resolve => { liberar = resolve; });
   await page.route('**/auth/v1/signup', async route => { await espera; await route.continue(); });
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Teléfono').fill('099123456');
@@ -175,7 +175,7 @@ test('el registro muestra que está procesando la solicitud', async ({ page }) =
 
 test('el registro sin nombre completo muestra un error', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
   await registro.getByLabel('Teléfono').fill('099123456');
@@ -186,7 +186,7 @@ test('el registro sin nombre completo muestra un error', async ({ page }) => {
 
 test('el registro sin teléfono muestra un error', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -197,7 +197,7 @@ test('el registro sin teléfono muestra un error', async ({ page }) => {
 
 test('Supabase rechaza un registro sin nombre completo', async ({ page, request }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -216,7 +216,7 @@ test('Supabase rechaza un registro sin nombre completo', async ({ page, request 
 
 test('Supabase rechaza un registro sin teléfono', async ({ page, request }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -235,7 +235,7 @@ test('Supabase rechaza un registro sin teléfono', async ({ page, request }) => 
 
 test('Supabase rechaza un registro con sexo fuera de las opciones', async ({ page, request }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -254,7 +254,7 @@ test('Supabase rechaza un registro con sexo fuera de las opciones', async ({ pag
 
 test('un registro fallido conserva los datos ingresados', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Ana Ejemplo');
   await registro.getByLabel('Email').fill('ana@example.com');
@@ -270,7 +270,7 @@ test('abre y cancela la creación de cuenta', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
   await expect(page.getByRole('form', { name: 'Registro' })).toBeHidden();
-  const enlace = page.getByRole('link', { name: 'CREAR UNA' });
+  const enlace = page.getByRole('link', { name: 'Crear cuenta.' });
   await enlace.click();
   const modal = page.getByRole('dialog', { name: 'Crear cuenta' });
   await expect(modal.getByLabel('Nombre completo')).toBeVisible();

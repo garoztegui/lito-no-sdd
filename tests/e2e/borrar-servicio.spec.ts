@@ -10,7 +10,7 @@ test('confirma el borrado y muestra el motivo cuando hay citas futuras', async (
   let servicioId = '';
   try {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Administrador Ejemplo');
     await registro.getByLabel('Email').fill(email);

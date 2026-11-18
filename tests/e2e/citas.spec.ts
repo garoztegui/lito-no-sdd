@@ -1,9 +1,30 @@
 import { expect, test } from '@playwright/test';
 import { fechaConTurnoDisponible } from './horarios';
 
+test('permite elegir horarios del mismo día a partir de cuatro horas', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
+  const registro = page.getByRole('form', { name: 'Registro' });
+  await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
+  await registro.getByLabel('Email').fill(`plazos-${crypto.randomUUID()}@example.test`);
+  await registro.getByLabel('Teléfono').fill('099123456');
+  await registro.getByLabel('Contraseña').fill('ClaveSegura123');
+  await registro.getByRole('button', { name: 'CREAR' }).click();
+  await expect(registro).toBeHidden();
+  await page.route('**/rest/v1/rpc/disponibilidad_semanal', route => route.fulfill({ json: [{ dia: 3, hora: 13 }, { dia: 3, hora: 14 }, { dia: 3, hora: 15 }] }));
+  await page.route('**/rest/v1/rpc/horarios_ocupados', route => route.fulfill({ json: [] }));
+  await page.route('**/rest/v1/rpc/horarios_bloqueados', route => route.fulfill({ json: [] }));
+  await page.clock.setFixedTime(new Date('2026-11-18T13:00:00Z'));
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
+  await expect(page.getByLabel('Fecha')).toHaveValue('2026-11-18');
+  await expect(page.getByRole('button', { name: '13:00 Disponible' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '14:00 Disponible' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '15:00 Disponible' })).toBeVisible();
+});
+
 test('un cliente solicita un turno disponible', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -29,7 +50,7 @@ test('un cliente solicita un turno disponible', async ({ page }) => {
 
 test('si falla la consulta no se muestran horarios como disponibles', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -51,7 +72,7 @@ test('un horario tomado mientras otro cliente lo solicita muestra un error', asy
   const paginas = await Promise.all(contextos.map(contexto => contexto.newPage()));
   for (const page of paginas) {
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
     await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -81,7 +102,7 @@ test('un horario tomado mientras otro cliente lo solicita muestra un error', asy
 
 test('si la solicitud no responde se informa y termina la espera', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);
@@ -112,7 +133,7 @@ test('si la solicitud no responde se informa y termina la espera', async ({ page
 
 test('si la consulta de horarios no responde permite reintentar', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'CREAR UNA' }).click();
+  await page.getByRole('link', { name: 'Crear cuenta.' }).click();
   const registro = page.getByRole('form', { name: 'Registro' });
   await registro.getByLabel('Nombre completo').fill('Cliente Ejemplo');
   await registro.getByLabel('Email').fill(`prueba-${crypto.randomUUID()}@example.com`);

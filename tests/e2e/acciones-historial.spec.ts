@@ -24,7 +24,7 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
       ('${cliente}', now() - interval '1 day','Espalda','confirmada')`);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.getByRole('link', { name: 'CREAR UNA' }).click();
+    await page.getByRole('link', { name: 'Crear cuenta.' }).click();
     const registro = page.getByRole('form', { name: 'Registro' });
     await registro.getByLabel('Nombre completo').fill('Admin Prueba');
     await registro.getByLabel('Email').fill(email);
