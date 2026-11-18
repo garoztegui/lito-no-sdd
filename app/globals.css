@@ -28,6 +28,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .menu-cuenta-opciones { position: absolute; z-index: 10; right: 0; display: grid; gap: .35rem; width: 13rem; padding: .55rem; border: 1px solid var(--borde); border-radius: .75rem; background: #fff; box-shadow: var(--sombra); }
 .menu-cuenta-opciones a, .menu-cuenta-opciones button { display: block; width: 100%; min-height: 2.75rem; padding: .6rem .75rem; border: 0; border-radius: .5rem; background: transparent; color: var(--texto); font-weight: 700; text-align: left; text-decoration: none; }
 .menu-cuenta-opciones a:hover, .menu-cuenta-opciones button:hover:not(:disabled) { background: var(--suave); color: var(--acento-oscuro); }
+.informacion { max-width: 48rem; margin-top: 1.5rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--borde); border-radius: 1rem; background: #fff; box-shadow: var(--sombra); overflow-wrap: anywhere; }
+.informacion h2:not(:first-child) { margin-top: 1.5rem; }
+.informacion ol { display: grid; gap: 1rem; padding-left: 1.5rem; }
+.informacion li p { margin: .35rem 0 0; }
+.mapa-ubicacion { display: block; width: 100%; height: 320px; max-width: 100%; margin-top: 1rem; border: 0; border-radius: .65rem; }
 .error-cierre { position: absolute; z-index: 11; top: 100%; right: 0; width: min(80vw, 24rem); padding: .75rem; border: 1px solid var(--borde); border-radius: .5rem; background: #fff; box-shadow: var(--sombra); }
 .container { width: min(100% - 2.5rem, 70rem); min-height: calc(100vh - 10rem); margin: auto; padding: clamp(2rem, 5vw, 4rem) 0 5rem; }
 .container::before { content: ''; float: right; width: clamp(5.5rem, 24vw, 12rem); height: clamp(5.5rem, 20vw, 10rem); margin: 0 0 .75rem .75rem; background: url('/images/recuperacion-rodillo.webp') center / contain no-repeat; pointer-events: none; }

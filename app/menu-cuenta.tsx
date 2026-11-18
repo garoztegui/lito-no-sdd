@@ -5,10 +5,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 type Usuario = { id: string; email?: string };
+const recomendacion = '¡Hola! 😊 Te recomiendo LITO masajes & fisioterapia 💆. Conoce más y solicita tu cita aquí: https://lito-reservas.vercel.app';
 
 export default function MenuCuenta() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [nombre, setNombre] = useState('');
+  const [esCliente, setEsCliente] = useState(false);
   const [version, setVersion] = useState(0);
   const [cerrando, setCerrando] = useState(false);
   const [error, setError] = useState('');
@@ -38,10 +40,14 @@ export default function MenuCuenta() {
   useEffect(() => {
     let vigente = true;
     setNombre('');
+    setEsCliente(false);
     if (!usuario) return () => { vigente = false; };
     const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
-    void supabase.from('perfiles').select('nombre').eq('id', usuario.id).maybeSingle().then(({ data }) => {
-      if (vigente) setNombre(data?.nombre?.trim() || usuario.email || 'Mi cuenta');
+    void supabase.from('perfiles').select('nombre,es_administrador').eq('id', usuario.id).maybeSingle().then(({ data, error }) => {
+      if (vigente) {
+        setNombre(data?.nombre?.trim() || usuario.email || 'Mi cuenta');
+        setEsCliente(!error && data?.es_administrador === false);
+      }
     });
     return () => { vigente = false; };
   }, [usuario, version]);
@@ -73,6 +79,9 @@ export default function MenuCuenta() {
     {usuario && <details className="menu-cuenta">
       <summary>{nombre || usuario.email || 'Mi cuenta'}</summary>
       <div className="menu-cuenta-opciones">
+        <a href="/como-funciona">¿Cómo funciona?</a>
+        {esCliente && <><a href="/ubicacion">Ubicación</a><a href="/medios-de-pago-y-contacto">Medios de pago y contacto</a></>}
+        <a href={`https://wa.me/?text=${encodeURIComponent(recomendacion)}`} target="_blank" rel="noopener noreferrer">Recomendar a LITO!</a>
         <a href="/configuracion">Configuración</a>
         <button type="button" onClick={() => void cerrarSesion()} disabled={cerrando}>{cerrando ? 'Cerrando sesión...' : 'Cerrar sesión'}</button>
       </div>

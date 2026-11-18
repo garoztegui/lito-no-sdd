@@ -6,9 +6,9 @@ Como cliente, quiero consultar desde el menú desplegable la dirección de LITO,
 
 ## Criterios de aceptación
 
-- [ ] Dado que ingresé como cliente, cuando abro el menú desplegable, entonces veo una opción para consultar la ubicación.
-- [ ] Dado que selecciono la opción, cuando se abre la pantalla, entonces veo la dirección y un mapa de Google Maps con un marcador en esa ubicación.
-- [ ] Dado que ingresé como administrador, cuando abro el menú desplegable, entonces no veo la opción de ubicación.
+- [x] Dado que ingresé como cliente, cuando abro el menú desplegable, entonces veo una opción para consultar la ubicación.
+- [x] Dado que selecciono la opción, cuando se abre la pantalla, entonces veo la dirección y un mapa de Google Maps con un marcador en esa ubicación.
+- [x] Dado que ingresé como administrador, cuando abro el menú desplegable, entonces no veo la opción de ubicación.
 
 ## Plan
 

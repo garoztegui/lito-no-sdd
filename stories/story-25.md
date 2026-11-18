@@ -6,9 +6,9 @@ Como cliente, quiero consultar los medios de pago y el contacto de Lito desde el
 
 ## Criterios de aceptación
 
-- [ ] Dado que ingresé como cliente, cuando abro el menú desplegable, entonces veo la opción «Medios de pago y contacto».
-- [ ] Dado que selecciono esa opción, cuando se abre la pantalla, entonces veo arriba el teléfono 094 553 211 y debajo los medios de pago: EFECTIVO y la cuenta de José Luis BANCO REPUBLICA $ 00040248300001.
-- [ ] Dado que ingresé como administrador, cuando abro el menú desplegable, entonces no veo esta opción.
+- [x] Dado que ingresé como cliente, cuando abro el menú desplegable, entonces veo la opción «Medios de pago y contacto».
+- [x] Dado que selecciono esa opción, cuando se abre la pantalla, entonces veo arriba el teléfono 094 553 211 y debajo los medios de pago: EFECTIVO y la cuenta de José Luis BANCO REPUBLICA $ 00040248300001.
+- [x] Dado que ingresé como administrador, cuando abro el menú desplegable, entonces no veo esta opción.
 
 ## Plan
 

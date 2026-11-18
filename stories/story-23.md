@@ -6,9 +6,9 @@ Como cliente o administrador, quiero acceder a «¿Cómo funciona?» desde la pa
 
 ## Criterios de aceptación
 
-- [ ] Dado que ingresé como cliente o administrador, cuando abro el menú desplegable, entonces veo «¿Cómo funciona?» en la parte superior.
-- [ ] Dado que selecciono «¿Cómo funciona?», cuando se abre la pantalla, entonces veo la misma explicación para ambos tipos de usuario, con palabras divertidas y emojis.
-- [ ] Dado que leo la explicación, cuando consulto el flujo, entonces entiendo cómo se solicita una cita, cómo responde el administrador, qué hacer ante una propuesta y cuáles son los plazos de vencimiento y cancelación.
+- [x] Dado que ingresé como cliente o administrador, cuando abro el menú desplegable, entonces veo «¿Cómo funciona?» en la parte superior.
+- [x] Dado que selecciono «¿Cómo funciona?», cuando se abre la pantalla, entonces veo la misma explicación para ambos tipos de usuario, con palabras divertidas y emojis.
+- [x] Dado que leo la explicación, cuando consulto el flujo, entonces entiendo cómo se solicita una cita, cómo responde el administrador, qué hacer ante una propuesta y cuáles son los plazos de vencimiento y cancelación.
 
 ## Plan
 
