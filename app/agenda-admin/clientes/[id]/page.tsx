@@ -1,6 +1,7 @@
 ﻿import Link from 'next/link';
 import { accesoAdministrador } from '../acceso';
 import AccionesCita from './acciones-cita';
+import TelefonoWhatsApp from '../../telefono-whatsapp';
 
 type Cliente = { id: string; nombre: string; email: string; telefono: string; sexo: string };
 type Cita = { id: string; inicio: string; servicio: string; estado: string };
@@ -33,7 +34,7 @@ export default async function HistorialCliente({ params }: { params: Promise<{ i
   return <main className="container clientes-admin"><h1>{cliente.nombre}</h1><Link href="/agenda-admin/clientes">Volver a clientes</Link>
     <section className="datos-cliente" aria-labelledby="titulo-datos-cliente">
       <h2 id="titulo-datos-cliente">Datos del cliente</h2>
-      <p>Nombre completo: {cliente.nombre}</p><p>Email: {cliente.email}</p><p>Teléfono: {cliente.telefono}</p><p>Sexo: {cliente.sexo}</p>
+      <p>Nombre completo: {cliente.nombre}</p><p>Email: {cliente.email}</p><p>Teléfono: <TelefonoWhatsApp telefono={cliente.telefono} /></p><p>Sexo: {cliente.sexo}</p>
     </section>
     <section className="mis-citas" aria-labelledby="titulo-historial">
       <h2 id="titulo-historial">Historial de citas</h2>

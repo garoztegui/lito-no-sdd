@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import TelefonoWhatsApp from './telefono-whatsapp';
 
 type Cliente = { id: string; nombre: string; email: string; telefono: string; sexo: string };
 
@@ -22,7 +23,7 @@ export default function DatosClienteModal({ cliente }: { cliente: Cliente }) {
       <dl>
         <dt>Nombre completo</dt><dd>{cliente.nombre}</dd>
         <dt>Email</dt><dd>{cliente.email}</dd>
-        <dt>Teléfono</dt><dd>{cliente.telefono}</dd>
+        <dt>Teléfono</dt><dd><TelefonoWhatsApp telefono={cliente.telefono} /></dd>
         <dt>Sexo</dt><dd>{cliente.sexo}</dd>
       </dl>
       <div className="acciones-datos-cliente">

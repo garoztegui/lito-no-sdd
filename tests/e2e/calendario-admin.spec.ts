@@ -44,6 +44,7 @@ test('muestra el mes y las reservas de un día en orden de hora', async ({ page 
     await filas.first().getByRole('link', { name: 'Cliente Calendario' }).click();
     const datos = page.getByRole('dialog', { name: 'Datos del cliente' });
     for (const dato of ['Cliente Calendario', email, '099123456', 'Hombre']) await expect(datos).toContainText(dato);
+    await expect(datos.getByRole('link', { name: '099123456' })).toHaveAttribute('href', 'https://wa.me/59899123456');
     expect(await datos.evaluate(elemento => elemento.scrollWidth <= elemento.clientWidth)).toBe(true);
     await datos.getByRole('button', { name: 'Cerrar' }).click();
     await expect(datos).toHaveCount(0);
@@ -90,7 +91,7 @@ test('muestra el mes y las reservas de un día en orden de hora', async ({ page 
     expect(sql(`select count(*) from public.citas where cliente_id=(select id from auth.users where email='${email}') and estado='pendiente'`)).toBe('1');
     await gestion.getByRole('button', { name: 'Rechazar solicitud' }).click();
     await confirmarRechazo.getByRole('button', { name: 'Sí', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('Solicitud rechazada.');
+    await expect(page.getByRole('status').filter({ hasText: 'Solicitud rechazada.' })).toBeVisible();
     expect(sql(`select count(*) from public.citas where cliente_id=(select id from auth.users where email='${email}') and estado='rechazada'`)).toBe('1');
   } finally {
     sql(`delete from public.citas where cliente_id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);

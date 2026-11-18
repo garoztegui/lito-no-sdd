@@ -20,3 +20,6 @@
 18. Como cliente, quiero recibir un email cuando el administrador acepte mi cita o proponga otro horario, para conocer la decisión y, ante una propuesta, el nuevo horario y cómo aceptarla o rechazarla desde la aplicación. Requiere: #5 y #6.
 19. Como cliente, quiero recibir un email cuando el administrador cancele mi cita, para conocer la cancelación y su motivo. Requiere: #15.
 20. [x] Como cliente, quiero navegar entre mis citas, las reservas y la configuración de mi cuenta, para gestionar mis datos y encontrar mis citas. Requiere: #1, #2 y #3.
+21. Como cliente, quiero crear una cuenta e iniciar sesión con Google, para acceder sin usar una contraseña de LITO.
+22. Como cliente que creó su cuenta con Google, quiero crear una contraseña desde la configuración, para poder acceder también con email y contraseña. Requiere: #21.
+23. Como cliente, quiero asociar o desasociar mi cuenta de Google desde la configuración, para gestionar cómo ingreso a mi cuenta. Requiere: #21.

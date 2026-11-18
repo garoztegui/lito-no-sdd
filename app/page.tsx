@@ -25,6 +25,10 @@ export default function Home() {
   const [versionCitas, setVersionCitas] = useState(0);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('error') === 'google') {
+      setErrorIngreso('No se pudo iniciar sesión con Google. Intentá nuevamente.');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -55,6 +59,23 @@ export default function Home() {
     setIngresando(false);
     setErrorIngreso(error ? 'No se pudo iniciar sesión.' : '');
     if (!error) setEmailUsuario(data.user.email ?? null);
+  }
+
+  async function ingresarConGoogle() {
+    setErrorIngreso('');
+    setIngresando(true);
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    );
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) {
+      setErrorIngreso('No se pudo iniciar sesión con Google.');
+      setIngresando(false);
+    }
   }
 
   async function registrar(event: FormEvent<HTMLFormElement>) {
@@ -103,6 +124,7 @@ export default function Home() {
         <label>Email<input name="email" type="email" /></label>
         <label>Contraseña<input name="password" type="password" /></label>
         <BotonIngreso pending={ingresando} />
+        <button type="button" className="boton-google" disabled={ingresando} onClick={() => void ingresarConGoogle()}><img src="/images/google-g.png" width="20" height="20" alt="" />Continuar con Google</button>
         <p role="alert">{errorIngreso}</p>
         <p>¿No tenés cuenta? <a href="#crear-cuenta" onClick={event => { event.preventDefault(); setMensaje(''); setRegistroAbierto(true); }}>CREAR UNA</a></p>
       </form>

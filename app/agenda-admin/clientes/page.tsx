@@ -1,5 +1,6 @@
 ﻿import Link from 'next/link';
 import { accesoAdministrador } from './acceso';
+import TelefonoWhatsApp from '../telefono-whatsapp';
 
 type Cliente = { id: string; nombre: string; email: string; telefono: string; sexo: string };
 
@@ -27,7 +28,7 @@ export default async function Clientes() {
             <table className="tabla-clientes" aria-label="Lista de clientes">
               <thead><tr><th scope="col">Nombre completo</th><th scope="col">Email</th><th scope="col">Teléfono</th><th scope="col">Sexo</th><th scope="col">Citas</th></tr></thead>
               <tbody>{clientes.map(cliente => <tr key={cliente.id}>
-                <td>{cliente.nombre}</td><td>{cliente.email}</td><td>{cliente.telefono}</td><td>{cliente.sexo}</td>
+                <td>{cliente.nombre}</td><td>{cliente.email}</td><td><TelefonoWhatsApp telefono={cliente.telefono} /></td><td>{cliente.sexo}</td>
                 <td><Link className="boton-citas-cliente" href={`/agenda-admin/clientes/${cliente.id}`}>Ver citas del usuario</Link></td>
               </tr>)}</tbody>
             </table>
