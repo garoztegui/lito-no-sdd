@@ -24,6 +24,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   propuesta antes de su vencimiento, sin contrapropuestas. Si acepta, la cita
   queda confirmada; si rechaza, se cancela.
 - Los clientes solo pueden acceder a sus propios datos y citas.
+- Los clientes pueden eliminar su cuenta tras confirmar una advertencia. Se eliminan sus datos personales y todas sus citas futuras; las citas pasadas se conservan con el nombre «USUARIO ELIMINADO» para reportes, sin el motivo de cancelación, que podría contener datos personales.
 - El cliente no puede cancelar una cita cuando faltan 12 horas o menos, salvo al rechazar una propuesta de horario.
 - El administrador puede cancelar una cita confirmada hasta una hora antes de su inicio
   indicando el motivo, que se envía por email al cliente. No puede proponer
@@ -42,6 +43,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 - Los bloqueos corresponden a fechas y horarios específicos, independientes de
   la disponibilidad semanal. El administrador puede verlos y eliminar los que
   aún no hayan pasado.
+- Los días 1.º de enero, 1.º de mayo, 18 de julio, 25 de agosto y 25 de diciembre se bloquean automáticamente cada año para reservas. El administrador ve una nota informativa y no puede quitar esos bloqueos.
 - Los servicios iniciales son masaje deportivo, cuerpo entero y espalda. Los
   administradores pueden administrar el catálogo.
 - Los servicios tienen un nombre único. El administrador puede crearlos y

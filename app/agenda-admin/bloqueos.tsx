@@ -65,6 +65,7 @@ export default function Bloqueos() {
 
   return <section className="bloqueos" aria-labelledby="titulo-bloqueos">
     <h2 id="titulo-bloqueos">Bloqueos de horarios</h2>
+    <p>Los cinco feriados no laborables están bloqueados automáticamente para reservas: 1.º de enero, 1.º de mayo, 18 de julio, 25 de agosto y 25 de diciembre.</p>
     <form onSubmit={(event: FormEvent) => { event.preventDefault(); void guardar(); }}>
       <label>Fecha del bloqueo<input type="date" required value={fecha} onChange={e => { setFecha(e.target.value); cambiar(); }} /></label>
       <label className="bloqueo-dia"><input type="checkbox" checked={todoElDia} onChange={e => { setTodoElDia(e.target.checked); cambiar(); }} />Todo el día</label>

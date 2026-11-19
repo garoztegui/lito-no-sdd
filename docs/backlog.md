@@ -1,4 +1,4 @@
-# Backlog
+﻿# Backlog
 
 1. Como cliente, quiero registrarme e iniciar sesión, para acceder a mi cuenta.
 2. Como cliente, quiero solicitar una cita en un horario disponible, para reservar una sesión. Las cuentas administradoras no pueden reservar. Requiere: #1.
@@ -27,3 +27,7 @@
 25. [x] Como cliente, quiero consultar en «Medios de pago y contacto» del menú desplegable el teléfono de Lito (094 553 211) y los medios de pago —efectivo y cuenta de José Luis en BANCO REPUBLICA $ 00040248300001—, para saber cómo contactarlo y pagar mi cita; el teléfono aparece arriba de los medios de pago.
 26. [x] Como cliente o administrador, quiero seleccionar «Recomendar a LITO!» y abrir WhatsApp con un mensaje amigable, emojis y un enlace a la página, para compartir LITO con otras personas.
 27. Como administrador, quiero recibir cada día a las 6:00, hora de Montevideo, un email con la agenda del día en una tabla que incluya horarios reservados y libres, y poder activar o desactivar mi envío desde Configuración mediante «enviar agenda diaria por mail», para planificar mi día y conocer los huecos disponibles.
+28. [BLOQUEADA] Como cliente, quiero recibir por WhatsApp un recordatorio amigable con emojis, la hora, el servicio y la dirección enlazada a Google Maps tres horas antes de mi cita confirmada, para recordar cuándo y dónde asistir.
+29. [x] Como cliente, quiero eliminar mi cuenta y todas mis citas futuras —solicitudes pendientes, propuestas de horario y citas confirmadas—, para dejar de usar LITO y liberar esos horarios; las citas pasadas se conservan sin mis datos personales.
+30. [x] Como cliente, quiero que se bloqueen permanentemente todos los años el 1.º de enero, 1.º de mayo, 18 de julio, 25 de agosto y 25 de diciembre, para no reservar citas en los cinco feriados no laborables de Uruguay.
+

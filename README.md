@@ -54,6 +54,7 @@ No uses credenciales ni datos reales de clientes para pruebas. `.env.local` est�
 | `SUPABASE_SECRET_KEY` | Clave de servidor para obtener datos necesarios para los emails de citas. | Claves API del proyecto Supabase correspondiente. |
 | `GMAIL_USER` | Dirección Gmail remitente de los correos de la aplicación. | Cuenta Gmail configurada para LITO. |
 | `GMAIL_APP_PASSWORD` | Contraseña de aplicación de Gmail utilizada por Nodemailer. | Cuenta de Google del remitente. |
+| `CRON_SECRET` | Secreto de servidor que protege el envío programado de la agenda diaria. | Generar un valor aleatorio y configurarlo en Vercel. |
 
 Las dos variables `NEXT_PUBLIC_` se envían al navegador; las otras son **solo de servidor**. Nunca pongas la clave secreta de Supabase ni contraseñas en variables públicas, código o commits. `.env.example` es una plantilla: reemplazá sus valores de ejemplo por los de tu entorno. Podés desarrollar sin configurar Gmail, pero los correos de la aplicación no se enviarán.
 
@@ -66,6 +67,8 @@ Las migraciones versionadas están en [`supabase/migrations`](supabase/migration
 El administrador se identifica mediante `perfiles.es_administrador`, configurado manualmente en la base. Para un entorno nuevo, registrá primero la cuenta correspondiente y actualizá esa bandera mediante un acceso administrativo autorizado a **esa base**, comprobando el usuario y el entorno antes de hacerlo. No uses una clave privilegiada desde el navegador.
 
 La migración `20261109221308_gestionar_solicitudes_y_vencimiento.sql` configura con `pg_cron` la tarea `cancelar-solicitudes-pendientes-vencidas`, que se ejecuta cada minuto. Al reconstruir un proyecto, verificá que la extensión y la tarea existan: no se trata de un cron de Vercel.
+
+La agenda diaria utiliza Supabase Cron para llamar al endpoint a partir de las 06:00 de Montevideo, con reintentos cada cinco minutos hasta las 06:55. Antes de activarlo, aplicar la migración y configurar `CRON_SECRET`, `SUPABASE_SECRET_KEY`, `GMAIL_USER` y `GMAIL_APP_PASSWORD` como variables de servidor. En Supabase Vault, crear `agenda_diaria_url` con la URL completa del endpoint `/api/agenda-diaria` y `agenda_diaria_cron_secret` con el mismo valor de `CRON_SECRET`. Sin ambos secretos no se realiza la llamada. Se registra el resultado por administrador y día; si se interrumpe el proceso después de que Gmail acepte el correo pero antes de registrar el éxito, un reintento podría duplicarlo.
 
 ### Proyecto alojado
 

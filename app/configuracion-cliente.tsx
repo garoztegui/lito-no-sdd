@@ -3,6 +3,9 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState, type FormEvent } from 'react';
 import { conLimite } from './limite';
+import { useRouter } from 'next/navigation';
+import ConfirmarCancelacion from './confirmar-cancelacion';
+import { eliminarCuenta } from './eliminar-cuenta-actions';
 
 type Perfil = { nombre: string; telefono: string; sexo: string };
 
@@ -14,6 +17,10 @@ export default function ConfiguracionCliente() {
   const [mensajeClave, setMensajeClave] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const [version, setVersion] = useState(0);
+  const [esCliente, setEsCliente] = useState(false);
+  const [confirmarEliminacion, setConfirmarEliminacion] = useState(false);
+  const [mensajeEliminacion, setMensajeEliminacion] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     let vigente = true;
@@ -22,9 +29,9 @@ export default function ConfiguracionCliente() {
       try {
         const { data: { user }, error } = await conLimite(() => supabase.auth.getUser());
         if (error || !user) throw new Error('Sin sesión');
-        const resultado = await conLimite(signal => supabase.from('perfiles').select('nombre,telefono,sexo').eq('id', user.id).abortSignal(signal).maybeSingle());
+        const resultado = await conLimite(signal => supabase.from('perfiles').select('nombre,telefono,sexo,es_administrador').eq('id', user.id).abortSignal(signal).maybeSingle());
         if (resultado.error || !resultado.data) throw new Error('Sin perfil');
-        if (vigente) { setId(user.id); setEmail(user.email ?? ''); setPerfil({ nombre: resultado.data.nombre ?? '', telefono: resultado.data.telefono ?? '', sexo: resultado.data.sexo ?? 'Prefiero no especificar' }); setMensaje(''); }
+        if (vigente) { setId(user.id); setEmail(user.email ?? ''); setEsCliente(resultado.data.es_administrador === false); setPerfil({ nombre: resultado.data.nombre ?? '', telefono: resultado.data.telefono ?? '', sexo: resultado.data.sexo ?? 'Prefiero no especificar' }); setMensaje(''); }
       } catch { if (vigente) setMensaje('No se pudieron cargar tus datos.'); }
     }
     void cargar();
@@ -42,6 +49,17 @@ export default function ConfiguracionCliente() {
       setMensaje('Datos actualizados.');
       window.dispatchEvent(new Event('perfil-actualizado'));
     } catch { setMensaje('No se pudieron guardar tus datos. Intentá nuevamente.'); }
+    finally { setOcupado(false); }
+  }
+
+  async function confirmarBaja() {
+    if (ocupado) return;
+    setOcupado(true); setConfirmarEliminacion(false); setMensajeEliminacion('');
+    try {
+      const resultado = await eliminarCuenta();
+      if (!resultado.ok) throw new Error('No se pudo eliminar la cuenta');
+      router.replace('/'); router.refresh();
+    } catch { setMensajeEliminacion('No se pudo eliminar la cuenta. Intentá nuevamente.'); }
     finally { setOcupado(false); }
   }
 
@@ -83,6 +101,12 @@ export default function ConfiguracionCliente() {
         <button type="submit" disabled={ocupado}>Guardar datos</button>
         {mensaje && <p role="status">{mensaje}</p>}
       </form>
+      {esCliente && <section aria-labelledby="titulo-eliminar-cuenta">
+        <h3 id="titulo-eliminar-cuenta">Eliminar cuenta</h3>
+        <button type="button" disabled={ocupado} onClick={() => setConfirmarEliminacion(true)}>Eliminar cuenta</button>
+        {mensajeEliminacion && <p role="alert">{mensajeEliminacion}</p>}
+        {confirmarEliminacion && <ConfirmarCancelacion titulo="Eliminar cuenta" mensaje="Se eliminarán tu cuenta, tus datos personales y todas tus citas futuras. Las citas pasadas se conservarán sin tus datos. Esta acción no se puede deshacer. ¿Querés continuar?" onNo={() => setConfirmarEliminacion(false)} onSi={() => void confirmarBaja()} />}
+      </section>}
       <form onSubmit={cambiarClave}>
         <h3>Crear o cambiar contraseña</h3>
         <p>Usá al menos 6 caracteres.</p>
