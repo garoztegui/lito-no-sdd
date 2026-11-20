@@ -14,7 +14,7 @@ export default function ProponerHorario({ citaId, fechaAnterior = '', error = ''
     <input type="hidden" name="citaId" value={citaId} />
     <input type="hidden" name="diaAgenda" value={diaAgenda} />
     <input type="hidden" name="nuevoInicioLocal" value={horario} />
-    <SelectorHorario onChange={setHorario} initialValue={fechaAnterior.slice(0, 10)} />
+    <SelectorHorario onChange={setHorario} initialValue={fechaAnterior.slice(0, 10) || diaAgenda} />
     {error && <p role="alert">{error}</p>}
     <button type="submit" disabled={!horario}>Confirmar propuesta</button>
   </form>;

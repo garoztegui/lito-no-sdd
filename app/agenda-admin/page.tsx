@@ -1,3 +1,4 @@
+import BotonVolver from '../boton-volver';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import GestionarCita from './gestionar-cita';
@@ -30,18 +31,18 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
     cookies: { getAll: () => almacenamiento.getAll(), setAll: () => {} },
   });
   const { data: { user }, error: errorUsuario } = await supabase.auth.getUser();
-  if (errorUsuario || !user) return <main className="container"><h1>Agenda administrativa</h1><p>Ingresá con una cuenta de administrador para consultar la agenda.</p><a href="/">Volver al inicio</a></main>;
+  if (errorUsuario || !user) return <main className="container"><h1>Agenda administrativa</h1><p>Ingresá con una cuenta de administrador para consultar la agenda.</p><BotonVolver href="/">Volver al inicio</BotonVolver></main>;
 
   const { data: perfil, error: errorPerfil } = await supabase.from('perfiles').select('es_administrador').eq('id', user.id).maybeSingle();
   if (errorPerfil) return <main className="container"><h1>Agenda administrativa</h1><p role="alert">No se pudo comprobar el acceso. Intentá nuevamente.</p><a href="/agenda-admin">Reintentar</a></main>;
-  if (!perfil?.es_administrador) return <main className="container"><h1>Agenda administrativa</h1><p>No tenés acceso a esta agenda.</p><a href="/">Volver al inicio</a></main>;
+  if (!perfil?.es_administrador) return <main className="container"><h1>Agenda administrativa</h1><p>No tenés acceso a esta agenda.</p><BotonVolver href="/">Volver al inicio</BotonVolver></main>;
 
   const seccion = parametros.seccion ?? (parametros.resultado ? 'agenda' : '');
-  if (!seccion) return <main className="container"><h1>Administración</h1><a href="/">Volver al inicio</a>
+  if (!seccion) return <main className="container"><h1>Administración</h1><BotonVolver href="/">Volver al inicio</BotonVolver>
     <MenuAdmin />
   </main>;
 
-  if (seccion !== 'agenda') return <main className="container"><h1>Administración</h1><a href="/agenda-admin">Volver a administración</a>
+  if (seccion !== 'agenda') return <main className="container"><h1>Administración</h1><BotonVolver href="/agenda-admin">Volver a administración</BotonVolver>
     {seccion === 'servicios' ? <Servicios /> : seccion === 'bloqueos' ? <Bloqueos /> : seccion === 'disponibilidad' ? <Disponibilidad /> : <p>Sección no disponible.</p>}
   </main>;
 
@@ -77,7 +78,7 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
   const mesRelativo = (desplazamiento: number) => new Date(Date.UTC(anio, numeroMes - 1 + desplazamiento, 1)).toISOString().slice(0, 7);
   const primerDia = (new Date(Date.UTC(anio, numeroMes - 1, 1)).getUTCDay() + 6) % 7;
   const tituloMes = new Intl.DateTimeFormat('es-UY', { timeZone: 'UTC', month: 'long', year: 'numeric' }).format(new Date(Date.UTC(anio, numeroMes - 1, 1)));
-  return <main className="container"><h1>Agenda administrativa</h1><a href="/agenda-admin">Volver a administración</a>
+  return <main className="container"><h1>Agenda administrativa</h1><BotonVolver href="/agenda-admin">Volver a administración</BotonVolver>
     {parametros.resultado && parametros.resultado !== 'horario_ocupado' && mensajes[parametros.resultado] && <p role="status">{mensajes[parametros.resultado]}</p>}
     {error ? <><p role="alert">No se pudo cargar la agenda. Intentá nuevamente.</p><a href="/agenda-admin?seccion=agenda">Reintentar</a></> : <>
       <section className="calendario-admin" aria-label="Calendario mensual">

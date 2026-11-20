@@ -32,7 +32,7 @@ test('el cliente usa el menú, filtra sus citas y modifica sus datos', async ({ 
   await page.getByLabel('Confirmar nueva contraseña').fill('NuevaClaveSegura456');
   await page.getByRole('button', { name: 'Guardar contraseña' }).click();
   await expect(page.getByText('Contraseña guardada. Ya podés ingresar con tu email y contraseña.')).toBeVisible();
-  await page.getByRole('link', { name: 'Volver al inicio' }).click();
+  await page.getByRole('button', { name: 'Volver al inicio' }).click();
   await page.route(/\/rest\/v1\/citas(?:\?|$)/, route => route.fulfill({ json: [
     { id: '1', inicio: '2099-01-07T13:00:00Z', servicio: 'Espalda', estado: 'pendiente' },
     { id: '2', inicio: '2099-01-08T13:00:00Z', servicio: 'Cuerpo entero', estado: 'confirmada' },

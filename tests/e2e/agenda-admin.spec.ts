@@ -112,6 +112,7 @@ test('el administrador puede proponer otro horario para una solicitud pendiente'
     await cita.getByRole('button', { name: /estado pendiente/ }).click();
     const gestion = page.getByRole('dialog', { name: /Gestionar cita/ });
     await gestion.getByRole('button', { name: 'Proponer otro horario' }).click();
+    await expect(gestion.getByLabel('Fecha')).toHaveValue(inicio.toISOString().slice(0, 10));
     await gestion.getByLabel('Fecha').fill(horarioOcupado.slice(0, 10));
     await expect(gestion.getByRole('button', { name: '10:00 Ocupado' })).toBeDisabled();
     await gestion.getByLabel('Fecha').fill(fechaPropuesta.slice(0, 10));

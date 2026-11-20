@@ -4,14 +4,16 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState } from 'react';
 import { fechaTexto, instanteLocal, limiteMaximo } from './agenda';
 import { conLimite } from './limite';
+import { usePlazos } from './plazos';
 
 export default function SelectorHorario({ onChange, disabled = false, initialValue = '' }: {
   onChange: (horario: string) => void; disabled?: boolean; initialValue?: string;
 }) {
+  const { plazos, error: errorPlazos } = usePlazos();
   const ahora = new Date();
-  const minimo = ahora.getTime() + 4 * 60 * 60 * 1000;
+  const minimo = ahora.getTime() + (plazos?.reserva ?? 0) * 60 * 60 * 1000;
   const maximo = limiteMaximo(ahora);
-  const [fecha, setFecha] = useState(() => initialValue.slice(0, 10) || fechaTexto(new Date(Date.now() + 4 * 60 * 60 * 1000)));
+  const [fecha, setFecha] = useState(() => initialValue.slice(0, 10) || fechaTexto(new Date(Date.now())));
   const [seleccion, setSeleccion] = useState(initialValue);
   const [ocupados, setOcupados] = useState<number[]>([]);
   const [disponibilidad, setDisponibilidad] = useState<{ dia: number; hora: number }[]>([]);
@@ -19,6 +21,12 @@ export default function SelectorHorario({ onChange, disabled = false, initialVal
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
   const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    if (!plazos) return;
+    const primeraFecha = fechaTexto(new Date(Date.now() + plazos.reserva * 60 * 60 * 1000));
+    setFecha(actual => actual < primeraFecha ? primeraFecha : actual);
+  }, [plazos]);
 
   useEffect(() => {
     let vigente = true;
@@ -54,7 +62,7 @@ export default function SelectorHorario({ onChange, disabled = false, initialVal
       disabled={disabled} onChange={event => { if (event.target.value) { setFecha(event.target.value); setSeleccion(''); onChange(''); } }} /></label>
     <p>{new Intl.DateTimeFormat('es-UY', { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${fecha}T12:00:00Z`))}</p>
     <fieldset><legend>Horarios (Montevideo)</legend>
-      {cargando ? <p>Consultando horarios...</p> : error ? <><p role="alert">No se pudieron consultar los horarios. Intentá nuevamente.</p><button type="button" onClick={() => setVersion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
+      {!plazos && !errorPlazos ? <p>Consultando plazos...</p> : errorPlazos ? <p role="alert">No se pudieron consultar los plazos.</p> : cargando ? <p>Consultando horarios...</p> : error ? <><p role="alert">No se pudieron consultar los horarios. Intentá nuevamente.</p><button type="button" onClick={() => setVersion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
         <div className="horarios">{horarios.map(({ hora, inicio }) => {
           const ocupado = ocupados.includes(inicio);
           const valor = `${fecha}T${String(hora).padStart(2, '0')}:00`;

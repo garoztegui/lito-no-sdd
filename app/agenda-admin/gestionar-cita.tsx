@@ -19,7 +19,7 @@ export default function GestionarCita({ citaId, nombre, estado, dia, fechaAnteri
     <button type="button" className={`estado-cita estado-${estado}`} aria-label={`Gestionar cita de ${nombre}, estado ${estado}`} onClick={() => setAbierto(true)}>{estado}</button>
     {abierto && <dialog ref={dialogo} className="modal-gestion" aria-labelledby={titulo} onClose={() => setAbierto(false)}>
       <h2 id={titulo}>Gestionar cita de {nombre}</h2>
-      <p>Estado: {estado}</p>
+      <p className="estado-gestion">Estado actual: <strong>{estado}</strong></p>
       {estado === 'pendiente' && <div className="acciones-agenda">
         <form className="accion-simple" action={aceptarSolicitud}><EsperaFormulario /><input type="hidden" name="citaId" value={citaId} /><input type="hidden" name="diaAgenda" value={dia} /><button type="submit">Aceptar solicitud</button></form>
         <form className="accion-simple" ref={formularioRechazo} action={rechazarSolicitud}><EsperaFormulario /><input type="hidden" name="citaId" value={citaId} /><input type="hidden" name="diaAgenda" value={dia} /><button type="button" onClick={() => setConfirmarRechazo(true)}>Rechazar solicitud</button></form>

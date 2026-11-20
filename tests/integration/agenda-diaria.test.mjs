@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 test('la agenda respeta preferencias, estados, permisos y evita envíos duplicados', () => {
-  const migration = readFileSync('supabase/migrations/20261119090000_agenda_diaria.sql', 'utf8');
+  const migration = readFileSync('supabase/migrations/20261119111837_agenda_diaria.sql', 'utf8');
   const sql = `begin;
 ${migration}
 delete from private.disponibilidad_semanal;

@@ -84,7 +84,9 @@ button:disabled { background: #dce2ee; border-color: #dce2ee; color: #515d74; cu
 .menu-admin a::after, .menu-cliente button::after { content: ''; width: .5rem; height: .5rem; margin-left: auto; border-top: 2px solid var(--acento); border-right: 2px solid var(--acento); transform: rotate(45deg); }
 .menu-cliente button:hover:not(:disabled) { background: #f4f7ff; border-color: #9fb1ed; color: var(--texto); }
 .menu-admin a:hover { background: #f4f7ff; border-color: #9fb1ed; color: var(--texto); }
-.volver-menu { width: auto; margin-top: 1.75rem; padding: .55rem 1rem; background: transparent; color: var(--acento-oscuro); border-color: #afbee8; }
+.volver-menu { width: min(100%, 18rem); min-height: 3.5rem; margin-top: 1.75rem; padding: .55rem 1rem; background: var(--acento); color: #fff; border-color: var(--acento); }
+form.formulario-volver { display: block; margin: 0 0 1rem; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.formulario-volver .volver-menu { margin: 0; }
 .agenda, .mis-citas, .configuracion-cliente { max-width: 48rem; margin-top: 2rem; }
 .agenda > p { color: var(--secundario); }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
@@ -102,6 +104,11 @@ legend { margin-bottom: .75rem; font-weight: 700; }
 .mis-citas .acciones-cita { display: grid; justify-items: center; }
 .mis-citas .acciones-cita button { width: min(100%, 16rem); min-width: 0; }
 .configuracion-cliente form { margin-top: 1rem; }
+.configuracion-aplicacion { max-width: 48rem; margin-top: 2rem; }
+.acciones-cuenta-bancaria { display: flex; flex-wrap: wrap; gap: .75rem; }
+.acciones-cuenta-bancaria button { width: 8rem; max-width: 100%; }
+.configuracion-aplicacion-opcion { display: flex; align-items: center; gap: .75rem; min-height: 2.75rem; }
+.configuracion-aplicacion-opcion input { flex: 0 0 auto; width: 1.25rem; height: 1.25rem; min-height: 0; margin: 0; padding: 0; accent-color: var(--acento); }
 .disponibilidad, .bloqueos, .servicios, .lista-clientes, .calendario-admin, .reservas-dia { margin: 2rem 0; }
 .disponibilidad fieldset { margin: 1rem 0; padding: 1rem; border: 1px solid var(--borde); border-radius: .9rem; background: #fff; }
 .turnos-semanales { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: .4rem; }
@@ -189,10 +196,13 @@ dialog.espera-accion[open] { display: grid; place-items: center; text-align: cen
 .estado-propuesta { background: #edf2ff; border-color: #516bb6; color: #183f9e; }
 .modal-gestion { max-height: min(90vh, 48rem); overflow-y: auto; }
 .modal-gestion form { padding: .75rem; margin-bottom: .5rem; box-shadow: none; }
-.acciones-agenda { display: grid; gap: .75rem; }
-.modal-gestion .accion-simple { padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; }
+.estado-gestion { font-size: 1.15rem; font-weight: 600; }
+.estado-gestion strong { color: var(--acento-oscuro); font-size: 1.35rem; text-transform: capitalize; }
+.acciones-agenda { display: grid; justify-items: center; gap: .75rem; }
+.modal-gestion .accion-simple { width: min(100%, 16rem); padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; }
+dialog.modal-gestion .acciones-agenda > button, dialog.modal-gestion .acciones-agenda > form > button { width: min(100%, 16rem); justify-self: center; }
 .modal-gestion textarea { width: 100%; min-height: 4rem; font: inherit; }
-.cerrar-gestion { margin-top: 1rem; background: #fff; color: var(--acento-oscuro); border-color: #7083a3; }
+dialog.modal-gestion > button.cerrar-gestion { display: block; width: min(100%, 12rem); margin: 1rem auto 0; background: #fff; color: var(--acento-oscuro); border-color: #7083a3; }
 .pie-sitio { width: min(100% - 2.5rem, 70rem); min-height: 5rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--borde); color: var(--secundario); font-size: .72rem; font-weight: 800; letter-spacing: .1em; }
 .pie-marcas { width: 3rem; height: 1rem; border-left: .6rem solid var(--acento); border-right: .6rem solid var(--acento); transform: skew(-30deg); }
 @media (min-width: 48rem) { .formularios { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
