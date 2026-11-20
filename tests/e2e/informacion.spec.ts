@@ -70,7 +70,7 @@ test('el cliente consulta las tres secciones desde el menú en celular', async (
     const medios = await page.getByRole('heading', { name: 'Medios de pago', exact: true }).boundingBox();
     expect(telefono!.y).toBeLessThan(medios!.y);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await page.getByRole('link', { name: 'Volver al inicio' }).click();
+    await page.getByRole('button', { name: 'Volver al inicio' }).click();
     await expect(page.getByRole('button', { name: 'Mis citas', exact: true })).toBeVisible();
   } finally {
     sql(`delete from auth.users where email='${email}'`);

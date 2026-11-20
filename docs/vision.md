@@ -17,7 +17,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   conocer los datos de quien reservó.
 - Una solicitud pendiente de aprobación del administrador o una propuesta de
   horario pendiente de respuesta del cliente se cancela automáticamente al
-  alcanzar las 4 horas previas a su inicio y libera el horario.
+  alcanzar el plazo de reserva configurado y libera el horario. El valor inicial es de 4 horas.
 - Los administradores pueden aceptar, rechazar o proponer otro horario.
 - Al proponer otro horario se libera el original y se ocupa el propuesto. El
   cliente recibe un email y, tras iniciar sesión, puede aceptar o rechazar la
@@ -25,7 +25,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   queda confirmada; si rechaza, se cancela.
 - Los clientes solo pueden acceder a sus propios datos y citas.
 - Los clientes pueden eliminar su cuenta tras confirmar una advertencia. Se eliminan sus datos personales y todas sus citas futuras; las citas pasadas se conservan con el nombre «USUARIO ELIMINADO» para reportes, sin el motivo de cancelación, que podría contener datos personales.
-- El cliente no puede cancelar una cita cuando faltan 12 horas o menos, salvo al rechazar una propuesta de horario.
+- El cliente no puede cancelar una cita cuando falta el plazo de cancelación configurado o menos, salvo al rechazar una propuesta de horario. El valor inicial es de 12 horas.
 - El administrador puede cancelar una cita confirmada hasta una hora antes de su inicio
   indicando el motivo, que se envía por email al cliente. No puede proponer
   otro horario para una cita confirmada.
@@ -57,8 +57,7 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   consecutivos.
 - Mientras no se configure la disponibilidad, se ofrecen turnos de lunes a
   viernes de 7:00 a 19:00, con inicios cada 60 minutos.
-- Se pueden solicitar turnos con al menos 4 horas de anticipación y hasta tres
-  meses a futuro.
+- Se pueden solicitar turnos con la anticipación configurada por el administrador, inicialmente 4 horas, y hasta tres meses a futuro.
 - Las fechas y horas se muestran en `America/Montevideo`.
 - Deben impedirse las reservas superpuestas incluso ante solicitudes simultáneas,
   con garantías en la base de datos.

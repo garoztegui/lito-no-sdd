@@ -1,5 +1,6 @@
 ﻿import Link from 'next/link';
 import { accesoAdministrador } from './acceso';
+import BotonVolver from '../../boton-volver';
 import TelefonoWhatsApp from '../telefono-whatsapp';
 
 type Cliente = { id: string; nombre: string; email: string; telefono: string; sexo: string };
@@ -10,7 +11,7 @@ export default async function Clientes() {
   const acceso = await accesoAdministrador();
   if (acceso.estado !== 'autorizado') return <main className="container"><h1>Clientes</h1>
     <p role={acceso.estado === 'error' ? 'alert' : undefined}>{acceso.estado === 'sin_sesion' ? 'Ingresá con una cuenta de administrador para consultar los clientes.' : acceso.estado === 'sin_acceso' ? 'No tenés acceso a esta sección.' : 'No se pudo comprobar el acceso. Intentá nuevamente.'}</p>
-    <Link href="/">Volver al inicio</Link></main>;
+    <BotonVolver href="/">Volver al inicio</BotonVolver></main>;
 
   const clientes: Cliente[] = [];
   let error = false;
@@ -30,7 +31,7 @@ export default async function Clientes() {
     anonimas.push(...(resultado.data ?? []));
     if ((resultado.data ?? []).length < porPagina) break;
   }
-  return <main className="container clientes-admin"><h1>Clientes</h1><Link href="/agenda-admin">Volver a la agenda administrativa</Link>
+  return <main className="container clientes-admin"><h1>Clientes</h1><BotonVolver href="/agenda-admin">Volver a la agenda administrativa</BotonVolver>
     <section className="lista-clientes" aria-label="Lista de clientes">
       {error ? <><p role="alert">No se pudieron cargar los clientes. Intentá nuevamente.</p><Link href="/agenda-admin/clientes">Reintentar</Link></> :
         clientes.length === 0 ? <p>No hay clientes registrados.</p> :

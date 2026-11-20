@@ -23,14 +23,14 @@ const mensajes: Record<string, string> = {
   error: 'No se pudo actualizar la cita. Intentá nuevamente.',
 };
 
-export default function AccionesCita({ clienteId, citaId, estado, futura }: { clienteId: string; citaId: string; estado: string; futura: boolean }) {
+export default function AccionesCita({ clienteId, citaId, estado, futura, fechaCita }: { clienteId: string; citaId: string; estado: string; futura: boolean; fechaCita: string }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [tipoMensaje, setTipoMensaje] = useState<'status' | 'alert'>('status');
   const [horario, setHorario] = useState('');
   const [propuestaAbierta, setPropuestaAbierta] = useState(false);
-  const [fechaPropuesta, setFechaPropuesta] = useState('');
+  const [fechaPropuesta, setFechaPropuesta] = useState(fechaCita);
   const [versionHorarios, setVersionHorarios] = useState(0);
   const [motivo, setMotivo] = useState('');
   const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);

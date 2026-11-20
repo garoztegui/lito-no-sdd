@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { conLimite } from './limite';
 import { solicitarCitaConEmail } from './email-citas-actions';
 import EsperaAccion from './espera-accion';
+import { usePlazos } from './plazos';
 
 const zona = 'America/Montevideo';
 const formato = new Intl.DateTimeFormat('en-CA', {
@@ -42,10 +43,11 @@ export function limiteMaximo(ahora: Date) {
 }
 
 export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
+  const { plazos, error: errorPlazos } = usePlazos();
   const ahora = new Date();
-  const minimo = ahora.getTime() + 4 * 60 * 60 * 1000;
+  const minimo = ahora.getTime() + (plazos?.reserva ?? 0) * 60 * 60 * 1000;
   const maximo = limiteMaximo(ahora);
-  const [fecha, setFecha] = useState(() => fechaTexto(new Date(Date.now() + 4 * 60 * 60 * 1000)));
+  const [fecha, setFecha] = useState(() => fechaTexto(new Date(Date.now())));
   const [servicio, setServicio] = useState('');
   const [seleccion, setSeleccion] = useState<number | null>(null);
   const [ocupados, setOcupados] = useState<number[]>([]);
@@ -57,6 +59,12 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
   const [enviando, setEnviando] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [actualizacion, setActualizacion] = useState(0);
+
+  useEffect(() => {
+    if (!plazos) return;
+    const primeraFecha = fechaTexto(new Date(Date.now() + plazos.reserva * 60 * 60 * 1000));
+    setFecha(actual => actual < primeraFecha ? primeraFecha : actual);
+  }, [plazos]);
 
   useEffect(() => {
     let vigente = true;
@@ -96,7 +104,7 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
 
   async function solicitar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (seleccion === null || !servicio || enviando) return;
+    if (!plazos || seleccion === null || !servicio || enviando) return;
     setEnviando(true);
     setMensaje('');
     try {
@@ -126,7 +134,7 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
         onChange={e => { if (e.target.value) { setFecha(e.target.value); setSeleccion(null); setMensaje(''); } }} /></label>
       <p>{new Intl.DateTimeFormat('es-UY', { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${fecha}T12:00:00Z`))}</p>
       <fieldset><legend>Horarios (Montevideo)</legend>
-        {cargando ? <p>Consultando horarios...</p> : errorConsulta ? <><p role="alert">{errorConsulta === 'servicios' ? 'No se pudieron consultar los servicios. Intentá nuevamente.' : 'No se pudieron consultar los horarios. Intentá nuevamente.'}</p><button type="button" onClick={() => setActualizacion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
+        {!plazos && !errorPlazos ? <p>Consultando plazos...</p> : errorPlazos ? <p role="alert">No se pudieron consultar los plazos.</p> : cargando ? <p>Consultando horarios...</p> : errorConsulta ? <><p role="alert">{errorConsulta === 'servicios' ? 'No se pudieron consultar los servicios. Intentá nuevamente.' : 'No se pudieron consultar los horarios. Intentá nuevamente.'}</p><button type="button" onClick={() => setActualizacion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
           <div className="horarios">{horarios.map(({ hora, inicio }) => {
             const ocupado = ocupados.includes(inicio);
             return <button key={inicio} type="button" className="horario" disabled={ocupado || enviando}
@@ -135,7 +143,7 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
             </button>;
           })}</div>}
       </fieldset>
-      <button type="submit" disabled={seleccion === null || enviando || cargando || errorConsulta !== null} aria-busy={enviando}>{enviando ? 'Enviando...' : 'Solicitar cita'}</button>
+      <button type="submit" disabled={!plazos || seleccion === null || enviando || cargando || errorConsulta !== null} aria-busy={enviando}>{enviando ? 'Enviando...' : 'Solicitar cita'}</button>
       <p role="status">{mensaje}</p>
     </form>
   </section>;

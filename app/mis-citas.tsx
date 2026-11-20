@@ -5,23 +5,25 @@ import { useEffect, useRef, useState } from 'react';
 import { conLimite } from './limite';
 import ConfirmarCancelacion from './confirmar-cancelacion';
 import EsperaAccion from './espera-accion';
+import { horas, usePlazos } from './plazos';
 
 type Cita = { id: string; inicio: string; servicio: string; estado: string };
 const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', dateStyle: 'long', timeStyle: 'short', hourCycle: 'h23',
 });
 
-function AvisoCancelacion({ cerrar }: { cerrar: () => void }) {
+function AvisoCancelacion({ cerrar, plazo }: { cerrar: () => void; plazo: number }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   useEffect(() => { dialogo.current?.showModal(); }, []);
   return <dialog ref={dialogo} aria-labelledby="titulo-aviso-cancelacion" onCancel={event => { event.preventDefault(); cerrar(); }}>
     <h2 id="titulo-aviso-cancelacion">Cancelación no disponible</h2>
-    <p>Ya no podés cancelar esta cita: faltan 12 horas o menos.</p>
+    <p>Ya no podés cancelar esta cita: faltan {horas(plazo)} o menos.</p>
     <div className="botones-confirmacion"><button type="button" onClick={cerrar} autoFocus>Cerrar</button></div>
   </dialog>;
 }
 
 export default function MisCitas({ version, onCancelacion }: { version: number; onCancelacion: () => void }) {
+  const { plazos, error: errorPlazos } = usePlazos();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [estado, setEstado] = useState<'cargando' | 'listo' | 'error'>('cargando');
   const [intento, setIntento] = useState(0);
@@ -99,7 +101,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
     const instanteActual = Date.now();
     const vencimientos = citas
       .filter(cita => cita.estado === 'pendiente' || cita.estado === 'propuesta')
-      .map(cita => Date.parse(cita.inicio) - 4 * 60 * 60 * 1000);
+      .map(cita => Date.parse(cita.inicio) - (plazos?.reserva ?? 0) * 60 * 60 * 1000);
     const proximoVencimiento = [...vencimientos, ...citas.map(cita => Date.parse(cita.inicio))]
       .filter(vencimiento => vencimiento > instanteActual)
       .sort((a, b) => a - b)[0];
@@ -111,10 +113,10 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
     );
     const temporizador = setTimeout(() => setAhora(Date.now()), demora);
     return () => clearTimeout(temporizador);
-  }, [citas, ahora]);
+  }, [citas, ahora, plazos]);
 
   const estadoVisible = (cita: Cita) => ahora !== null && (cita.estado === 'pendiente' || cita.estado === 'propuesta')
-    && Date.parse(cita.inicio) <= ahora + 4 * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
+    && Date.parse(cita.inicio) <= ahora + (plazos?.reserva ?? 0) * 60 * 60 * 1000 ? 'cancelada' : cita.estado;
   const citasFiltradas = citas.filter(cita => filtro === 'todos' || estadoVisible(cita) === filtro)
     .sort((a, b) => {
       const inicioA = Date.parse(a.inicio);
@@ -132,7 +134,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
       <option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="confirmada">Confirmada</option><option value="propuesta">Propuesta</option><option value="cancelada">Cancelada</option><option value="rechazada">Rechazada</option>
     </select></label>
     {respuesta && <p role="status">{respuesta}</p>}
-    {estado === 'cargando' ? <p role="status">Cargando tus citas...</p> :
+    {errorPlazos ? <p role="alert">No se pudieron cargar los plazos.</p> : !plazos ? <p role="status">Cargando plazos...</p> : estado === 'cargando' ? <p role="status">Cargando tus citas...</p> :
       estado === 'error' ? <><p role="alert">No se pudieron cargar tus citas.</p><button type="button" aria-label="Reintentar cargar mis citas" onClick={() => setIntento(valor => valor + 1)}>Reintentar</button></> :
       citas.length === 0 ? <p>Todavía no tenés citas.</p> : citasFiltradas.length === 0 ? <p>No hay citas con este estado.</p> :
       <ul>{citasFiltradas.map(cita => {
@@ -143,7 +145,7 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
           <p>Estado: <strong>{estadoActual.charAt(0).toUpperCase() + estadoActual.slice(1)}</strong></p>
           {(estadoActual === 'pendiente' || estadoActual === 'confirmada') && ahora !== null && Date.parse(cita.inicio) > ahora &&
             <button type="button" disabled={respondiendo} onClick={() => {
-              if (cita.estado === 'confirmada' && Date.parse(cita.inicio) <= Date.now() + 12 * 60 * 60 * 1000) setAvisoCancelacion(true);
+              if (cita.estado === 'confirmada' && Date.parse(cita.inicio) <= Date.now() + (plazos?.cancelacion ?? 0) * 60 * 60 * 1000) setAvisoCancelacion(true);
               else setConfirmacion({ id: cita.id, rechazo: false });
             }}>Cancelar cita</button>}
           {estadoActual === 'propuesta' && <div className="acciones-cita">
@@ -154,6 +156,6 @@ export default function MisCitas({ version, onCancelacion }: { version: number; 
       })}</ul>}
     {confirmacion && <ConfirmarCancelacion mensaje={confirmacion.rechazo ? '¿Estás seguro de rechazar la propuesta y cancelar la cita?' : '¿Estás seguro de cancelar la cita?'}
       onNo={() => setConfirmacion(null)} onSi={() => { const { id, rechazo } = confirmacion; setConfirmacion(null); void (rechazo ? responder(id, 'rechazar') : cancelar(id)); }} />}
-    {avisoCancelacion && <AvisoCancelacion cerrar={() => setAvisoCancelacion(false)} />}
+    {avisoCancelacion && <AvisoCancelacion plazo={plazos?.cancelacion ?? 0} cerrar={() => setAvisoCancelacion(false)} />}
   </section>;
 }

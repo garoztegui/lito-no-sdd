@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 test('los cinco feriados se bloquean cada año y las fechas restantes conservan la disponibilidad', () => {
-  const migracion = readFileSync('supabase/migrations/20261119130000_feriados_no_laborables.sql', 'utf8');
+  const migracion = readFileSync('supabase/migrations/20261119145602_feriados_no_laborables.sql', 'utf8');
   const sql = `begin;
 update public.citas set estado = 'cancelada'
 where inicio > clock_timestamp() and estado in ('pendiente','propuesta','confirmada')

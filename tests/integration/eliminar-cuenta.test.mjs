@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 test('eliminar una cuenta conserva el historial anónimo y elimina sus datos y citas futuras', () => {
-  const migracion = readFileSync('supabase/migrations/20261119120000_eliminar_cuenta.sql', 'utf8');
+  const migracion = readFileSync('supabase/migrations/20261119144834_eliminar_cuenta.sql', 'utf8');
   const sql = `begin;
 grant supabase_auth_admin to postgres;
 set local role postgres;

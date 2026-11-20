@@ -1,4 +1,4 @@
-﻿import { execFileSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
 
 // Este recorrido requiere una instancia local aislada con únicamente datos sintéticos.
@@ -88,7 +88,7 @@ test('solo el administrador consulta datos e historial completo de clientes', as
       select gen_random_uuid(), 'story13-bulk-${sufijo}-' || n || '@example.test',
         jsonb_build_object('nombre', 'ZZ Cliente ' || lpad(n::text, 4, '0'), 'telefono', '099555555', 'sexo', 'Mujer')
       from generate_series(1, 501) n`);
-    await page.getByRole('link', { name: 'Volver a clientes' }).click();
+    await page.getByRole('button', { name: 'Volver a clientes' }).click();
     await expect(page.getByRole('row').filter({ hasText: 'ZZ Cliente 0501' })).toBeVisible();
     await page.getByRole('row').filter({ hasText: 'Cliente Sin Citas' }).getByRole('link', { name: 'Ver citas del usuario' }).click();
     await expect(page.getByText('Este cliente no tiene citas.')).toBeVisible();
