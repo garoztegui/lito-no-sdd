@@ -36,3 +36,4 @@
 34. [x] Como administrador, quiero configurar desde Configuración los plazos de reserva y cancelación, para adaptar esas reglas a las necesidades de LITO. Requiere: #2 y #8.
 35. [x] Como administrador, quiero agregar más de una cuenta bancaria, para que los usuarios puedan verlas todas en los medios de pago. Requiere: #25 y #33.
 
+36. Como administrador, quiero pulsar «Enviarme lista de usuarios por mail» en la sección de usuarios, para recibir en el correo de mi cuenta una tabla con todos sus datos. Requiere: #13.
