@@ -127,6 +127,8 @@ legend { margin-bottom: .75rem; font-weight: 700; }
 .tabla-clientes th { background: #f1f5ff; color: #30456f; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
 .tabla-clientes td { background: #fff; }
 .tabla-clientes tbody tr:last-child td { border-bottom: 0; }
+.accion-lista-usuarios { display: grid; justify-items: center; text-align: center; }
+.accion-lista-usuarios button { width: min(100%, 20rem); }
 .boton-citas-cliente { display: inline-block; min-width: 12rem; padding: .6rem 1rem; border: 1px solid var(--acento); border-radius: 999px; color: var(--acento-oscuro); font-weight: 700; text-align: center; text-decoration: none; }
 .acciones-historial { display: grid; gap: .75rem; margin-top: .75rem; }
 .acciones-historial form { padding: 1rem; box-shadow: none; }
