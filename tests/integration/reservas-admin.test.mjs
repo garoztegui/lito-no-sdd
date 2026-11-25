@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 test('administradores reservan para clientes y personas sin cuenta, con controles de acceso', () => {
-  const migration = readFileSync(new URL('../../supabase/migrations/20261125012713_reservas_administrador.sql', import.meta.url), 'utf8');
+  const migration = readFileSync(new URL('../../supabase/migrations/20261125105104_reservas_administrador.sql', import.meta.url), 'utf8');
   const sql = `begin;
     select to_regprocedure('public.reservar_cita_administrador(timestamp with time zone,text,uuid,text,text,text,text)') is null as install_test_migration \\gset
     \\if :install_test_migration

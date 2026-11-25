@@ -70,7 +70,8 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 ### Administración y acceso
 
 - Los administradores pueden consultar clientes, los datos personales necesarios,
-  el historial de citas y la agenda futura.
+  el historial de citas y la agenda. En el calendario, las citas confirmadas cuya
+  sesión terminó se muestran como «Completada», sin acciones.
 - El historial de cada cliente incluye todas sus solicitudes y citas, pasadas y
   futuras, cualquiera sea su estado. Desde allí el administrador puede gestionar
   citas futuras según las reglas correspondientes a cada estado.

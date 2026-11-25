@@ -12,7 +12,7 @@ const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
 });
 
-type Cita = { id: string; inicio: string; servicio: string; estado: string; nombre: string; email: string | null; telefono: string | null; sexo: string | null };
+type Cita = { id: string; inicio: string; servicio: string; estado: string; nombre: string; email: string | null; telefono: string | null; sexo: string | null; completada?: boolean; invitado?: boolean };
 
 const mensajes: Record<string, string> = {
   aceptada: 'Solicitud aceptada. La cita quedó confirmada.',
@@ -57,20 +57,27 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
   }
   const hoy = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Montevideo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   const mes = typeof parametros.mes === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(parametros.mes) && Number(parametros.mes.slice(0, 4)) >= 1000 ? parametros.mes : hoy.slice(0, 7);
+  for (let desde = 0; ; desde += porPagina) {
+    const resultado = await supabase.rpc('agenda_completadas', { p_mes: `${mes}-01` }).range(desde, desde + porPagina - 1);
+    if (resultado.error) { error = true; break; }
+    citas.push(...(resultado.data ?? []).map((cita: { id: string; inicio: string; servicio: string; nombre: string; invitado: boolean }) => ({ ...cita, estado: 'Completada', email: null, telefono: null, sexo: null, completada: true })));
+    if ((resultado.data ?? []).length < porPagina) break;
+  }
   const [anio, numeroMes] = mes.split('-').map(Number);
   const diasMes = new Date(Date.UTC(anio, numeroMes, 0)).getUTCDate();
   const dia = typeof parametros.dia === 'string' && parametros.dia.startsWith(`${mes}-`) && /^\d{4}-\d{2}-\d{2}$/.test(parametros.dia) && Number(parametros.dia.slice(8)) >= 1 && Number(parametros.dia.slice(8)) <= diasMes ? parametros.dia : '';
   const fechaCita = (inicio: string) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Montevideo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(inicio));
   const diasConCitas = new Set(citas.map(cita => fechaCita(cita.inicio)));
   const citasDia = citas.filter(cita => fechaCita(cita.inicio) === dia).sort((a, b) => Date.parse(a.inicio) - Date.parse(b.inicio));
+  const citasActivasDia = citasDia.filter(cita => !cita.completada);
   const clientesPorEmail = new Map<string, string>();
   const invitados = new Set<string>();
   let errorClientes = false;
-  if (citasDia.length) {
-    const resultadoInvitados = await supabase.rpc('invitados_agenda').in('cita_id', citasDia.map(cita => cita.id));
+  if (citasActivasDia.length) {
+    const resultadoInvitados = await supabase.rpc('invitados_agenda').in('cita_id', citasActivasDia.map(cita => cita.id));
     if (resultadoInvitados.error) errorClientes = true;
     for (const invitado of resultadoInvitados.data ?? []) invitados.add(invitado.cita_id);
-    const emails = [...new Set(citasDia.filter(cita => !invitados.has(cita.id)).map(cita => cita.email).filter((email): email is string => email !== null))];
+    const emails = [...new Set(citasActivasDia.filter(cita => !invitados.has(cita.id)).map(cita => cita.email).filter((email): email is string => email !== null))];
     if (emails.length) {
     for (let desde = 0; ; desde += porPagina) {
       const resultado = await supabase.rpc('clientes_administrador', { p_cliente_id: null }).in('email', emails).range(desde, desde + porPagina - 1);
@@ -79,7 +86,7 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
       if ((resultado.data ?? []).length < porPagina) break;
     }
     }
-    if (citasDia.some(cita => !invitados.has(cita.id) && (!cita.email || !clientesPorEmail.has(cita.email)))) errorClientes = true;
+    if (citasActivasDia.some(cita => !invitados.has(cita.id) && (!cita.email || !clientesPorEmail.has(cita.email)))) errorClientes = true;
   }
   const mesRelativo = (desplazamiento: number) => new Date(Date.UTC(anio, numeroMes - 1 + desplazamiento, 1)).toISOString().slice(0, 7);
   const primerDia = (new Date(Date.UTC(anio, numeroMes - 1, 1)).getUTCDay() + 6) % 7;
@@ -89,7 +96,7 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
     {error ? <><p role="alert">No se pudo cargar la agenda. Intentá nuevamente.</p><a href="/agenda-admin?seccion=agenda">Reintentar</a></> : <>
       <section className="calendario-admin" aria-label="Calendario mensual">
         <div className="calendario-encabezado"><a href={`/agenda-admin?seccion=agenda&mes=${mesRelativo(-1)}`}>Mes anterior</a><h2>{tituloMes}</h2><a href={`/agenda-admin?seccion=agenda&mes=${mesRelativo(1)}`}>Mes siguiente</a></div>
-        <p>Los días indican si tienen reservas futuras activas. Horarios de Montevideo.</p>
+        <p>Los días indican si tienen reservas activas o completadas. Horarios de Montevideo.</p>
         <div className="calendario-leyenda" aria-label="Referencias del calendario"><span><i className="leyenda-con" aria-hidden="true" />Con reservas</span><span><i className="leyenda-sin" aria-hidden="true" />Sin reservas</span></div>
         <div className="calendario-grilla">{['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(nombre => <strong key={nombre}>{nombre}</strong>)}
           {Array.from({ length: primerDia }, (_, indice) => <span key={`vacio-${indice}`} />)}
@@ -103,8 +110,8 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
       {dia && <section className="reservas-dia" aria-label="Reservas del día"><h2>Reservas del {dia}</h2>
         {citasDia.length === 0 ? <p>No hay reservas para este día.</p> : errorClientes ? <><p role="alert">No se pudieron cargar los datos de los clientes. Intentá nuevamente.</p><a href={`/agenda-admin?seccion=agenda&mes=${mes}&dia=${dia}`}>Reintentar</a></> : <div className="tabla-clientes-contenedor" tabIndex={0} role="region" aria-label="Desplazar tabla de reservas">
           <table className="tabla-clientes tabla-reservas" aria-label="Reservas del día"><thead><tr><th scope="col">Hora</th><th scope="col">Nombre completo</th><th scope="col">Servicio</th><th scope="col">Estado</th></tr></thead>
-            <tbody>{citasDia.map(cita => <tr key={cita.id}><td><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time></td><td><DatosClienteModal cliente={{ id: invitados.has(cita.id) ? null : clientesPorEmail.get(cita.email!)!, nombre: cita.nombre, email: cita.email, telefono: cita.telefono, sexo: cita.sexo }} /></td><td>{cita.servicio}</td><td>
-              <GestionarCita key={`${cita.id}:${cita.estado}:${parametros.citaId === cita.id && parametros.resultado === 'horario_ocupado' ? Date.now() : ''}`} citaId={cita.id} nombre={cita.nombre} estado={cita.estado} dia={dia} fechaAnterior={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined} error={parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id ? mensajes.horario_ocupado : undefined} />
+            <tbody>{citasDia.map(cita => <tr key={cita.id}><td><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time></td><td>{cita.completada ? <>{cita.nombre}{cita.invitado && ' (usuario no registrado)'}</> : <DatosClienteModal cliente={{ id: invitados.has(cita.id) ? null : clientesPorEmail.get(cita.email!)!, nombre: cita.nombre, email: cita.email, telefono: cita.telefono, sexo: cita.sexo }} />}</td><td>{cita.servicio}</td><td>
+              {cita.completada ? <span>Completada</span> : <GestionarCita key={`${cita.id}:${cita.estado}:${parametros.citaId === cita.id && parametros.resultado === 'horario_ocupado' ? Date.now() : ''}`} citaId={cita.id} nombre={cita.nombre} estado={cita.estado} dia={dia} fechaAnterior={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined} error={parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id ? mensajes.horario_ocupado : undefined} />}
             </td></tr>)}</tbody>
           </table>
         </div>}
