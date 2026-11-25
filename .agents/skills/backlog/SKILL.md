@@ -1,6 +1,6 @@
 ---
 name: backlog
-description: Turns a software idea or a discussed feature into a backlog of short, vertical user stories. No acceptance criteria or implementation; that's /story's job.
+description: Turns an idea into short, vertical user stories and creates their initial GitHub issues. No acceptance criteria or implementation; that's /story's job.
 disable-model-invocation: true
 ---
 
@@ -18,6 +18,8 @@ Your job is to help me split what I tell you into user stories. I bring the requ
    - Offline or sync
    - Multi-language or multi-currency
 4. Propose the backlog. I adjust it.
+5. After I approve the backlog, create one GitHub issue per story in `garoztegui/lito-no-sdd`, using the approved one-line story as the issue body. Add each issue to the LITO RESERVAS project (`garoztegui` project 1) with status `Backlog`. Report the issue links and any failures; do not create duplicates on a retry.
+6. For dependencies, link the actual GitHub issue numbers, which may differ from the story numbers. If a dependency cannot be identified, report it instead of guessing.
 
 ## Rules
 
@@ -43,4 +45,4 @@ Expensive decisions: <the ones that apply, or "none">
 
 Add `Requires: #N` only when a story makes no sense without another.
 
-When done, offer to save the context and stack in  `AGENTS.md`. The stories go to my tracker; don't save them to files unless I ask.
+When done, offer to save the context and stack in `AGENTS.md`. The stories go to GitHub Issues; don't save them to files unless I ask. Follow the repository's remote-authorization rules before accessing GitHub.

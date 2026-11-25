@@ -5,3 +5,5 @@ test-results/
 .env*
 !.env.example
 next-env.d.ts
+# Local AI runtime state
+.atl/

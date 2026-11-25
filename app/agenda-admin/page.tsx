@@ -12,7 +12,7 @@ const formato = new Intl.DateTimeFormat('es-UY', {
   timeZone: 'America/Montevideo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
 });
 
-type Cita = { id: string; inicio: string; servicio: string; estado: string; nombre: string; email: string; telefono: string; sexo: string };
+type Cita = { id: string; inicio: string; servicio: string; estado: string; nombre: string; email: string | null; telefono: string | null; sexo: string | null };
 
 const mensajes: Record<string, string> = {
   aceptada: 'Solicitud aceptada. La cita quedó confirmada.',
@@ -64,16 +64,22 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
   const diasConCitas = new Set(citas.map(cita => fechaCita(cita.inicio)));
   const citasDia = citas.filter(cita => fechaCita(cita.inicio) === dia).sort((a, b) => Date.parse(a.inicio) - Date.parse(b.inicio));
   const clientesPorEmail = new Map<string, string>();
+  const invitados = new Set<string>();
   let errorClientes = false;
   if (citasDia.length) {
-    const emails = [...new Set(citasDia.map(cita => cita.email))];
+    const resultadoInvitados = await supabase.rpc('invitados_agenda').in('cita_id', citasDia.map(cita => cita.id));
+    if (resultadoInvitados.error) errorClientes = true;
+    for (const invitado of resultadoInvitados.data ?? []) invitados.add(invitado.cita_id);
+    const emails = [...new Set(citasDia.filter(cita => !invitados.has(cita.id)).map(cita => cita.email).filter((email): email is string => email !== null))];
+    if (emails.length) {
     for (let desde = 0; ; desde += porPagina) {
       const resultado = await supabase.rpc('clientes_administrador', { p_cliente_id: null }).in('email', emails).range(desde, desde + porPagina - 1);
       if (resultado.error) { errorClientes = true; break; }
       for (const cliente of resultado.data ?? []) clientesPorEmail.set(cliente.email, cliente.id);
       if ((resultado.data ?? []).length < porPagina) break;
     }
-    if (citasDia.some(cita => !clientesPorEmail.has(cita.email))) errorClientes = true;
+    }
+    if (citasDia.some(cita => !invitados.has(cita.id) && (!cita.email || !clientesPorEmail.has(cita.email)))) errorClientes = true;
   }
   const mesRelativo = (desplazamiento: number) => new Date(Date.UTC(anio, numeroMes - 1 + desplazamiento, 1)).toISOString().slice(0, 7);
   const primerDia = (new Date(Date.UTC(anio, numeroMes - 1, 1)).getUTCDay() + 6) % 7;
@@ -97,7 +103,7 @@ export default async function AgendaAdmin({ searchParams }: { searchParams: Prom
       {dia && <section className="reservas-dia" aria-label="Reservas del día"><h2>Reservas del {dia}</h2>
         {citasDia.length === 0 ? <p>No hay reservas para este día.</p> : errorClientes ? <><p role="alert">No se pudieron cargar los datos de los clientes. Intentá nuevamente.</p><a href={`/agenda-admin?seccion=agenda&mes=${mes}&dia=${dia}`}>Reintentar</a></> : <div className="tabla-clientes-contenedor" tabIndex={0} role="region" aria-label="Desplazar tabla de reservas">
           <table className="tabla-clientes tabla-reservas" aria-label="Reservas del día"><thead><tr><th scope="col">Hora</th><th scope="col">Nombre completo</th><th scope="col">Servicio</th><th scope="col">Estado</th></tr></thead>
-            <tbody>{citasDia.map(cita => <tr key={cita.id}><td><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time></td><td><DatosClienteModal cliente={{ id: clientesPorEmail.get(cita.email)!, nombre: cita.nombre, email: cita.email, telefono: cita.telefono, sexo: cita.sexo }} /></td><td>{cita.servicio}</td><td>
+            <tbody>{citasDia.map(cita => <tr key={cita.id}><td><time dateTime={cita.inicio}>{formato.format(new Date(cita.inicio))}</time></td><td><DatosClienteModal cliente={{ id: invitados.has(cita.id) ? null : clientesPorEmail.get(cita.email!)!, nombre: cita.nombre, email: cita.email, telefono: cita.telefono, sexo: cita.sexo }} /></td><td>{cita.servicio}</td><td>
               <GestionarCita key={`${cita.id}:${cita.estado}:${parametros.citaId === cita.id && parametros.resultado === 'horario_ocupado' ? Date.now() : ''}`} citaId={cita.id} nombre={cita.nombre} estado={cita.estado} dia={dia} fechaAnterior={parametros.citaId === cita.id ? parametros.nuevoInicioLocal : undefined} error={parametros.resultado === 'horario_ocupado' && parametros.citaId === cita.id ? mensajes.horario_ocupado : undefined} />
             </td></tr>)}</tbody>
           </table>

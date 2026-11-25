@@ -9,7 +9,12 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
 ### Clientes y solicitudes
 
 - Los clientes pueden registrarse, iniciar sesión y solicitar citas.
-- Las cuentas administradoras no pueden solicitar ni reservar citas.
+- Las cuentas administradoras no pueden reservar citas para sí mismas. Pueden
+  reservar citas confirmadas para usuarios registrados o personas sin cuenta,
+  en turnos futuros disponibles y sin la anticipación mínima de clientes. Para
+  una persona sin cuenta solo es obligatorio el nombre; apellido, email y
+  teléfono son opcionales. Si se proporciona un email, se envía una confirmación;
+  un fallo de envío no anula la cita.
 - Para crear una cuenta se solicitan nombre completo, email, teléfono, sexo y
   contraseña.
 - Las opciones de sexo son hombre, mujer y prefiero no especificar.

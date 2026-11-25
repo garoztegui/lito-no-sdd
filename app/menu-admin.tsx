@@ -1,5 +1,6 @@
 export default function MenuAdmin() {
   return <nav className="menu-admin" aria-label="Opciones de administración">
+    <a href="/agenda-admin/reservar">Reservar una cita</a>
     <a href="/agenda-admin?seccion=agenda">Ver agenda</a>
     <a href="/agenda-admin/clientes">Listado de usuarios</a>
     <a href="/agenda-admin?seccion=disponibilidad">Modificar horarios disponibles</a>

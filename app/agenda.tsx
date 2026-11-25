@@ -6,6 +6,7 @@ import { conLimite } from './limite';
 import { solicitarCitaConEmail } from './email-citas-actions';
 import EsperaAccion from './espera-accion';
 import { usePlazos } from './plazos';
+import { reservarParaOtraPersona } from './agenda-admin/reservar/actions';
 
 const zona = 'America/Montevideo';
 const formato = new Intl.DateTimeFormat('en-CA', {
@@ -42,10 +43,17 @@ export function limiteMaximo(ahora: Date) {
   return instanteLocal(texto, p.hour) + p.minute * 60000 + p.second * 1000;
 }
 
-export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
+type ClienteReserva = { id: string; nombre: string; email: string };
+export default function Agenda({ onSolicitudFinalizada, versionCitas, clientesAdmin }: { onSolicitudFinalizada: () => void; versionCitas: number; clientesAdmin?: ClienteReserva[] }) {
+  const esAdmin = clientesAdmin !== undefined;
+  const [clienteId, setClienteId] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
   const { plazos, error: errorPlazos } = usePlazos();
   const ahora = new Date();
-  const minimo = ahora.getTime() + (plazos?.reserva ?? 0) * 60 * 60 * 1000;
+  const minimo = ahora.getTime() + (esAdmin ? 0 : (plazos?.reserva ?? 0)) * 60 * 60 * 1000;
   const maximo = limiteMaximo(ahora);
   const [fecha, setFecha] = useState(() => fechaTexto(new Date(Date.now())));
   const [servicio, setServicio] = useState('');
@@ -61,10 +69,10 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
   const [actualizacion, setActualizacion] = useState(0);
 
   useEffect(() => {
-    if (!plazos) return;
+    if (!plazos || esAdmin) return;
     const primeraFecha = fechaTexto(new Date(Date.now() + plazos.reserva * 60 * 60 * 1000));
     setFecha(actual => actual < primeraFecha ? primeraFecha : actual);
-  }, [plazos]);
+  }, [plazos, esAdmin]);
 
   useEffect(() => {
     let vigente = true;
@@ -104,13 +112,15 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
 
   async function solicitar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!plazos || seleccion === null || !servicio || enviando) return;
+    if ((!esAdmin && !plazos) || seleccion === null || !servicio || enviando) return;
     setEnviando(true);
     setMensaje('');
     try {
-      const resultado = await conLimite(() => solicitarCitaConEmail(new Date(seleccion).toISOString(), servicio));
+      const resultado = await conLimite(() => esAdmin
+        ? reservarParaOtraPersona(new Date(seleccion).toISOString(), servicio, clienteId || null, nombre, apellido, email, telefono)
+        : solicitarCitaConEmail(new Date(seleccion).toISOString(), servicio));
       if (resultado.error && resultado.code !== '23505' && resultado.code !== '23514') throw new Error('No se pudo confirmar');
-      setMensaje(resultado.error ? resultado.code === '23514' ? 'No se pudo solicitar la cita. El horario o servicio ya no está disponible.' : 'No se pudo solicitar la cita. El horario puede haber dejado de estar disponible.' : 'Solicitud enviada. Tu cita está pendiente.');
+      setMensaje(resultado.error ? resultado.code === '23514' ? 'No se pudo solicitar la cita. El horario o servicio ya no está disponible.' : 'No se pudo solicitar la cita. El horario puede haber dejado de estar disponible.' : esAdmin ? 'La cita quedó confirmada.' : 'Solicitud enviada. Tu cita está pendiente.');
     } catch {
       setMensaje('No pudimos confirmar la solicitud. Revisá los horarios antes de intentar nuevamente.');
     } finally {
@@ -123,9 +133,18 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
 
   return <section className="agenda" aria-labelledby="titulo-agenda">
     {enviando && <EsperaAccion />}
-    <h2 id="titulo-agenda">Solicitar una cita</h2>
+    <h2 id="titulo-agenda">{esAdmin ? 'Reservar una cita' : 'Solicitar una cita'}</h2>
     <p>Elegí un servicio, una fecha y un horario. Las sesiones duran 60 minutos.</p>
     <form onSubmit={solicitar}>
+      {esAdmin && <><label>Persona<select value={clienteId} onChange={e => setClienteId(e.target.value)}>
+        <option value="">Persona no registrada</option>
+        {clientesAdmin.map(cliente => <option key={cliente.id} value={cliente.id}>{cliente.nombre} — {cliente.email}</option>)}
+      </select></label>{!clienteId && <>
+        <label>Nombre<input value={nombre} onChange={e => setNombre(e.target.value)} required /></label>
+        <label>Apellido (opcional)<input value={apellido} onChange={e => setApellido(e.target.value)} /></label>
+        <label>Email (opcional)<input type="email" value={email} onChange={e => setEmail(e.target.value)} /></label>
+        <label>Teléfono (opcional)<input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} /></label>
+      </>}</>}
       <label>Servicio<select value={servicio} onChange={e => setServicio(e.target.value)} required>
         <option value="">Elegí un servicio</option>
         {servicios.map(item => <option key={item.id} value={item.nombre}>{item.nombre}</option>)}
@@ -134,7 +153,7 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
         onChange={e => { if (e.target.value) { setFecha(e.target.value); setSeleccion(null); setMensaje(''); } }} /></label>
       <p>{new Intl.DateTimeFormat('es-UY', { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${fecha}T12:00:00Z`))}</p>
       <fieldset><legend>Horarios (Montevideo)</legend>
-        {!plazos && !errorPlazos ? <p>Consultando plazos...</p> : errorPlazos ? <p role="alert">No se pudieron consultar los plazos.</p> : cargando ? <p>Consultando horarios...</p> : errorConsulta ? <><p role="alert">{errorConsulta === 'servicios' ? 'No se pudieron consultar los servicios. Intentá nuevamente.' : 'No se pudieron consultar los horarios. Intentá nuevamente.'}</p><button type="button" onClick={() => setActualizacion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
+        {!esAdmin && !plazos && !errorPlazos ? <p>Consultando plazos...</p> : !esAdmin && errorPlazos ? <p role="alert">No se pudieron consultar los plazos.</p> : cargando ? <p>Consultando horarios...</p> : errorConsulta ? <><p role="alert">{errorConsulta === 'servicios' ? 'No se pudieron consultar los servicios. Intentá nuevamente.' : 'No se pudieron consultar los horarios. Intentá nuevamente.'}</p><button type="button" onClick={() => setActualizacion(valor => valor + 1)}>Reintentar</button></> : horarios.length === 0 ? <p>No hay horarios disponibles para esta fecha.</p> :
           <div className="horarios">{horarios.map(({ hora, inicio }) => {
             const ocupado = ocupados.includes(inicio);
             return <button key={inicio} type="button" className="horario" disabled={ocupado || enviando}
@@ -143,7 +162,7 @@ export default function Agenda({ onSolicitudFinalizada, versionCitas }: { onSoli
             </button>;
           })}</div>}
       </fieldset>
-      <button type="submit" disabled={!plazos || seleccion === null || enviando || cargando || errorConsulta !== null} aria-busy={enviando}>{enviando ? 'Enviando...' : 'Solicitar cita'}</button>
+      <button type="submit" disabled={(!esAdmin && !plazos) || seleccion === null || enviando || cargando || errorConsulta !== null} aria-busy={enviando}>{enviando ? 'Enviando...' : esAdmin ? 'Confirmar reserva' : 'Solicitar cita'}</button>
       <p role="status">{mensaje}</p>
     </form>
   </section>;
