@@ -43,6 +43,13 @@ export async function bloquearServicio(id: string) {
   return data;
 }
 
+export async function desbloquearServicio(id: string) {
+  const supabase = await administrador();
+  const { data, error } = await supabase.rpc('desbloquear_servicio', { p_id: id });
+  if (error) throw new Error('No se pudo desbloquear el servicio');
+  return data;
+}
+
 export async function borrarServicio(id: string) {
   const supabase = await administrador();
   const { data, error } = await supabase.rpc('borrar_servicio', { p_id: id });

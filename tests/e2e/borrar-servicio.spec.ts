@@ -42,7 +42,9 @@ test('confirma el borrado y muestra el motivo cuando hay citas futuras', async (
     sql(`insert into public.citas (cliente_id, inicio, servicio, estado) select id, now() + interval '300 days', '${nombre}', 'pendiente' from auth.users where email = '${email}'`);
     await borrar.click();
     await dialogo.getByRole('button', { name: 'Sí', exact: true }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'El servicio tiene citas futuras' })).toBeVisible();
+    const aviso = page.getByRole('dialog', { name: 'Servicio con citas futuras' });
+    await expect(aviso).toContainText('El servicio tiene citas futuras. Podés bloquearlo para impedir nuevas reservas.');
+    await aviso.getByRole('button', { name: 'Entendido' }).click();
     expect(sql(`select count(*) from private.servicios where id = '${servicioId}'`)).toBe('1');
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
     await borrar.click();
@@ -53,6 +55,6 @@ test('confirma el borrado y muestra el motivo cuando hay citas futuras', async (
   } finally {
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
     if (/^[0-9a-f-]{36}$/.test(servicioId)) sql(`delete from private.servicios where id = '${servicioId}'`);
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id = (select id from auth.users where email = '${email}'); delete from auth.users where email = '${email}'`);
   }
 });

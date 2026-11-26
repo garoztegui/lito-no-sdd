@@ -46,15 +46,16 @@ con acceso para un único administrador. Debe ser cómoda de usar desde el celul
   dentro de las próximas 24 horas, se informa que no se puede realizar la
   operación y no se modifica la disponibilidad ni se cancelan citas.
 - Los bloqueos corresponden a fechas y horarios específicos, independientes de
-  la disponibilidad semanal. El administrador puede verlos y eliminar los que
-  aún no hayan pasado.
+  la disponibilidad semanal. El administrador ve los que aún no terminaron y
+  puede eliminarlos; los bloqueos terminados dejan de aparecer en la lista.
 - Los días 1.º de enero, 1.º de mayo, 18 de julio, 25 de agosto y 25 de diciembre se bloquean automáticamente cada año para reservas. El administrador ve una nota informativa y no puede quitar esos bloqueos.
 - Los servicios iniciales son masaje deportivo, cuerpo entero y espalda. Los
   administradores pueden administrar el catálogo.
 - Los servicios tienen un nombre único. El administrador puede crearlos y
   cambiar su nombre; al renombrar uno se actualiza el nombre en sus citas futuras.
-- Un administrador puede bloquear un servicio para impedir nuevas reservas sin
-  modificar las citas existentes. También puede borrarlo si no tiene citas
+- Un administrador puede bloquear un servicio para impedir nuevas reservas y
+  desbloquearlo para volver a ofrecerlo, sin modificar las citas existentes.
+  También puede borrarlo si no tiene citas
   futuras pendientes, con propuesta o confirmadas; si las tiene, se le informa
   y se le recomienda bloquearlo. Las citas pasadas conservan el nombre del
   servicio borrado.

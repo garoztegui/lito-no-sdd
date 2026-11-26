@@ -57,7 +57,7 @@ export default function Disponibilidad() {
 
   return <section className="disponibilidad" aria-labelledby="titulo-disponibilidad">
     <h2 id="titulo-disponibilidad">Disponibilidad semanal</h2>
-    <p>Elegí los horarios de inicio de las sesiones de 60 minutos (Montevideo).</p>
+    <p>Elegí los horarios de inicio de las sesiones de 60 minutos.</p>
     {mensaje && <p role="status">{mensaje}</p>}
     {!turnos ? !mensaje && <p role="status">Cargando disponibilidad...</p> : <>
       {dias.map((nombre, indice) => <fieldset key={nombre} disabled={ocupado}>

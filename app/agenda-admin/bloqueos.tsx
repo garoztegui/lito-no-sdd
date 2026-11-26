@@ -7,6 +7,9 @@ import ConfirmarCancelacion from '../confirmar-cancelacion';
 type Bloqueo = { id: string; fecha: string; hora_inicio: number; hora_fin: number };
 type Resultado = { resultado: string; citas?: string[]; cantidad?: number };
 const horaTexto = (hora: number) => `${String(hora).padStart(2, '0')}:00`;
+const fechaHoraMontevideo = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Montevideo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+});
 
 export default function Bloqueos() {
   const [bloqueos, setBloqueos] = useState<Bloqueo[] | null>(null);
@@ -18,6 +21,18 @@ export default function Bloqueos() {
   const [mensaje, setMensaje] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const [version, setVersion] = useState(0);
+  const [ahora, setAhora] = useState(() => Date.now());
+
+  useEffect(() => {
+    let temporizador: ReturnType<typeof setTimeout>;
+    function actualizar() {
+      const instante = Date.now();
+      setAhora(instante);
+      temporizador = setTimeout(actualizar, 60000 - instante % 60000);
+    }
+    actualizar();
+    return () => clearTimeout(temporizador);
+  }, []);
 
   useEffect(() => {
     let vigente = true;
@@ -63,6 +78,10 @@ export default function Bloqueos() {
     finally { setOcupado(false); }
   }
 
+  const partes = Object.fromEntries(fechaHoraMontevideo.formatToParts(new Date(ahora)).map(parte => [parte.type, parte.value]));
+  const hoy = `${partes.year}-${partes.month}-${partes.day}`;
+  const vigentes = bloqueos?.filter(b => b.fecha > hoy || (b.fecha === hoy && b.hora_fin > Number(partes.hour))) ?? null;
+
   return <section className="bloqueos" aria-labelledby="titulo-bloqueos">
     <h2 id="titulo-bloqueos">Bloqueos de horarios</h2>
     <p>Los cinco feriados no laborables están bloqueados automáticamente para reservas: 1.º de enero, 1.º de mayo, 18 de julio, 25 de agosto y 25 de diciembre.</p>
@@ -84,8 +103,8 @@ export default function Bloqueos() {
       onSi={() => { const citas = confirmacion.citas ?? []; setConfirmacion(null); void guardar(citas); }}
       onNo={() => { setConfirmacion(null); setMensaje('No se realizaron cambios.'); }} />}
     <h3>Bloqueos registrados</h3>
-    {bloqueos === null ? <p>{mensaje ? 'No se pudo cargar la lista.' : 'Cargando bloqueos...'}</p> : bloqueos.length === 0 ? <p>No hay bloqueos registrados.</p> :
-      <ul>{bloqueos.map(b => <li key={b.id}>
+    {vigentes === null ? <p>{mensaje ? 'No se pudo cargar la lista.' : 'Cargando bloqueos...'}</p> : vigentes.length === 0 ? <p>No hay bloqueos registrados.</p> :
+      <ul>{vigentes.map(b => <li key={b.id}>
         <p><time dateTime={b.fecha}>{new Intl.DateTimeFormat('es-UY', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${b.fecha}T12:00:00Z`))}</time>: {horaTexto(b.hora_inicio)} a {horaTexto(b.hora_fin)} (Montevideo)</p>
         <button type="button" disabled={ocupado} onClick={() => void eliminar(b.id)} aria-label={`Eliminar bloqueo del ${b.fecha} de ${horaTexto(b.hora_inicio)} a ${horaTexto(b.hora_fin)}`}>Eliminar bloqueo</button>
       </li>)}</ul>}

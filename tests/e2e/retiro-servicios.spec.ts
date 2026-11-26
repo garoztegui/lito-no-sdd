@@ -40,6 +40,7 @@ test('el administrador bloquea servicios con citas y borra servicios sin citas f
     await catalogo.getByRole('button', { name: 'Borrar servicio' }).click();
     await page.getByRole('dialog', { name: 'Confirmar eliminación' }).getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(catalogo.getByText('El servicio tiene citas futuras. Podés bloquearlo para impedir nuevas reservas.')).toBeVisible();
+    await page.getByRole('dialog', { name: 'Servicio con citas futuras' }).getByRole('button', { name: 'Entendido' }).click();
     await catalogo.getByRole('button', { name: 'Bloquear servicio' }).focus();
     await page.keyboard.press('Enter');
     const confirmacionBloqueo = page.getByRole('dialog', { name: 'Confirmar bloqueo' });
@@ -61,6 +62,6 @@ test('el administrador bloquea servicios con citas y borra servicios sin citas f
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
     if (/^[0-9a-f-]{36}$/.test(activoId)) sql(`delete from private.servicios where id = '${activoId}'`);
     if (/^[0-9a-f-]{36}$/.test(pasadoId)) sql(`delete from private.servicios where id = '${pasadoId}'`);
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id = (select id from auth.users where email = '${email}'); delete from auth.users where email = '${email}'`);
   }
 });

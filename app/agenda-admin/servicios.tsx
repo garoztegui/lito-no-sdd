@@ -2,10 +2,20 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { consultarServicios, crearServicio, renombrarServicio, bloquearServicio, borrarServicio } from './servicios-actions';
+import { consultarServicios, crearServicio, renombrarServicio, bloquearServicio, desbloquearServicio, borrarServicio } from './servicios-actions';
 
 type Servicio = { id: string; nombre: string; bloqueado: boolean };
-type Dialogo = { servicio: Servicio; accion: 'renombrar' | 'bloquear' | 'borrar' };
+type Dialogo = { servicio: Servicio; accion: 'renombrar' | 'bloquear' | 'desbloquear' | 'borrar' };
+
+function AvisoCitasFuturas({ cerrar }: { cerrar: () => void }) {
+  const elemento = useRef<HTMLDialogElement>(null);
+  useEffect(() => { elemento.current?.showModal(); }, []);
+  return <dialog ref={elemento} aria-labelledby="titulo-servicio-con-citas" onCancel={event => event.preventDefault()}>
+    <h2 id="titulo-servicio-con-citas">Servicio con citas futuras</h2>
+    <p>El servicio tiene citas futuras. Podés bloquearlo para impedir nuevas reservas.</p>
+    <div className="botones-confirmacion"><button type="button" autoFocus onClick={cerrar}>Entendido</button></div>
+  </dialog>;
+}
 
 function DialogoServicio({ dialogo, ocupado, mensaje, cerrar, guardar, confirmar }: {
   dialogo: Dialogo; ocupado: boolean; mensaje: string; cerrar: () => void;
@@ -14,7 +24,7 @@ function DialogoServicio({ dialogo, ocupado, mensaje, cerrar, guardar, confirmar
   const elemento = useRef<HTMLDialogElement>(null);
   useEffect(() => { elemento.current?.showModal(); }, []);
   const { servicio, accion } = dialogo;
-  const titulo = accion === 'renombrar' ? 'Cambiar nombre' : accion === 'bloquear' ? 'Confirmar bloqueo' : 'Confirmar eliminación';
+  const titulo = accion === 'renombrar' ? 'Cambiar nombre' : accion === 'bloquear' ? 'Confirmar bloqueo' : accion === 'desbloquear' ? 'Confirmar desbloqueo' : 'Confirmar eliminación';
   return <dialog ref={elemento} aria-labelledby="titulo-dialogo-servicio" onCancel={event => { event.preventDefault(); if (!ocupado) cerrar(); }}>
     <h2 id="titulo-dialogo-servicio">{titulo}</h2>
     {accion === 'renombrar' ? <form noValidate onSubmit={event => guardar(event, servicio.id)}>
@@ -22,7 +32,7 @@ function DialogoServicio({ dialogo, ocupado, mensaje, cerrar, guardar, confirmar
       {mensaje && <p role="alert">{mensaje}</p>}
       <div className="botones-confirmacion"><button type="button" disabled={ocupado} onClick={cerrar}>Cancelar</button><button type="submit" disabled={ocupado}>Guardar</button></div>
     </form> : <>
-      <p>¿Estás seguro de {accion === 'bloquear' ? 'bloquear' : 'borrar'} el servicio {servicio.nombre}?</p>
+      <p>¿Estás seguro de {accion === 'bloquear' ? 'bloquear' : accion === 'desbloquear' ? 'desbloquear' : 'borrar'} el servicio {servicio.nombre}?</p>
       <div className="botones-confirmacion"><button type="button" disabled={ocupado} onClick={cerrar} autoFocus>Cancelar</button><button type="button" disabled={ocupado} onClick={confirmar}>Sí</button></div>
     </>}
   </dialog>;
@@ -36,6 +46,7 @@ export default function Servicios() {
   const [version, setVersion] = useState(0);
   const [seleccion, setSeleccion] = useState('');
   const [dialogo, setDialogo] = useState<Dialogo | null>(null);
+  const [avisoCitas, setAvisoCitas] = useState(false);
   const mensajeGeneral = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => { if (mensaje === 'Servicio borrado.') mensajeGeneral.current?.focus(); }, [mensaje]);
@@ -70,17 +81,17 @@ export default function Servicios() {
     finally { setOcupado(false); }
   }
 
-  async function retirar(id: string, accion: 'bloquear' | 'borrar') {
+  async function retirar(id: string, accion: 'bloquear' | 'desbloquear' | 'borrar') {
     if (ocupado) return;
     setOcupado(true);
     setMensaje('');
     try {
-      const resultado = accion === 'bloquear' ? await bloquearServicio(id) : await borrarServicio(id);
-      if (resultado === 'tiene_citas') setMensaje('El servicio tiene citas futuras. Podés bloquearlo para impedir nuevas reservas.');
+      const resultado = accion === 'bloquear' ? await bloquearServicio(id) : accion === 'desbloquear' ? await desbloquearServicio(id) : await borrarServicio(id);
+      if (resultado === 'tiene_citas') setAvisoCitas(true);
       else if (resultado === 'no_disponible') setMensaje('El servicio ya no está disponible.');
-      else if (resultado === 'bloqueado' || resultado === 'borrado') {
+      else if (resultado === 'bloqueado' || resultado === 'desbloqueado' || resultado === 'borrado') {
         if (resultado === 'borrado') setSeleccion('');
-        setMensaje(resultado === 'bloqueado' ? 'Servicio bloqueado.' : 'Servicio borrado.');
+        setMensaje(resultado === 'bloqueado' ? 'Servicio bloqueado.' : resultado === 'desbloqueado' ? 'Servicio desbloqueado.' : 'Servicio borrado.');
         setVersion(valor => valor + 1);
       } else throw new Error('Resultado inesperado');
     } catch { setMensaje('No se pudo actualizar el servicio. Intentá nuevamente.'); }
@@ -106,11 +117,13 @@ export default function Servicios() {
           <div className="acciones-servicio">
             <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'renombrar' }); }}>Cambiar nombre</button>
             {!servicio.bloqueado && <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'bloquear' }); }}>Bloquear servicio</button>}
+            {servicio.bloqueado && <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'desbloquear' }); }}>Desbloquear servicio</button>}
             <button type="button" disabled={ocupado} onClick={() => { setMensaje(''); setDialogo({ servicio, accion: 'borrar' }); }}>Borrar servicio</button>
           </div>
         </div>)}
       </>}
     </section>
     {dialogo && <DialogoServicio dialogo={dialogo} ocupado={ocupado} mensaje={mensaje} cerrar={() => { setDialogo(null); setMensaje(''); }} guardar={(event, id) => void guardar(event, id)} confirmar={() => { if (dialogo.accion !== 'renombrar') { const { servicio, accion } = dialogo; setDialogo(null); void retirar(servicio.id, accion); } }} />}
+    {avisoCitas && <AvisoCitasFuturas cerrar={() => setAvisoCitas(false)} />}
   </section>;
 }
