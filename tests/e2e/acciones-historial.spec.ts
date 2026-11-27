@@ -68,6 +68,6 @@ test('el administrador gestiona las citas futuras según su estado', async ({ pa
     expect(sql(`select count(*) from public.citas where inicio='${dia} 11:00 America/Montevideo' and estado='propuesta'`)).toBe('1');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   } finally {
-    sql(`delete from public.citas where cliente_id='${cliente}'; delete from auth.users where id='${cliente}' or email='${email}'`);
+    sql(`delete from public.citas where cliente_id='${cliente}'; update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where id='${cliente}' or email='${email}'`);
   }
 });

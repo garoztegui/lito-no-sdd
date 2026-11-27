@@ -53,6 +53,6 @@ test('el administrador crea y renombra un servicio disponible para reservas', as
   } finally {
     sql(`delete from public.citas where cliente_id = (select id from auth.users where email = '${email}')`);
     if (/^[0-9a-f-]{36}$/.test(servicioId)) sql(`delete from private.servicios where id = '${servicioId}'`);
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });

@@ -38,6 +38,6 @@ test('permite aceptar y confirmar el rechazo desde el historial', async ({ page 
     await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
     await expect(rechazar).toContainText('Estado: rechazada');
   } finally {
-    sql(`delete from public.citas where cliente_id='${cliente}'; delete from auth.users where id='${cliente}' or email='${email}'`);
+    sql(`delete from public.citas where cliente_id='${cliente}'; update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where id='${cliente}' or email='${email}'`);
   }
 });

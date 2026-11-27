@@ -43,7 +43,7 @@ test('el administrador revisa y confirma una reducción de disponibilidad', asyn
     await expect(page.getByText('Disponibilidad guardada.')).toBeVisible();
     expect(llamadas).toBe(3);
   } finally {
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });
 
@@ -70,6 +70,6 @@ test('la agenda ofrece los horarios configurados para el día elegido', async ({
     await expect(page.getByRole('button', { name: '14:00 Disponible' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Disponible$/ })).toHaveCount(1);
   } finally {
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });

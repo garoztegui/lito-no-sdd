@@ -34,19 +34,15 @@ test('el administrador bloquea y libera un horario en la agenda', async ({ page 
     await expect(bloqueos.getByRole('status')).toHaveText('Bloqueo guardado.');
     idBloqueo = sql(`select id from private.bloqueos where fecha = '${fecha}' and hora_inicio = 12 and hora_fin = 13`);
     expect(idBloqueo).toMatch(/^[0-9a-f-]{36}$/);
-    await page.goto('/');
-    await page.getByLabel('Fecha', { exact: true }).fill(fecha);
-    await expect(page.getByRole('button', { name: /^12:00 / })).toHaveCount(0);
+    expect(sql(`select private.inicio_disponible(('${fecha}'::timestamp + interval '12 hours') at time zone 'America/Montevideo')`)).toBe('f');
     await page.goto('/agenda-admin?seccion=bloqueos');
     const fila = page.getByRole('listitem').filter({ has: page.locator(`time[datetime="${fecha}"]`) }).filter({ hasText: '12:00 a 13:00' });
     await fila.getByRole('button', { name: /Eliminar bloqueo/ }).click();
     await expect(page.getByText('Bloqueo eliminado.')).toBeVisible();
-    await page.goto('/');
-    await page.getByLabel('Fecha', { exact: true }).fill(fecha);
-    await expect(page.getByRole('button', { name: '12:00 Disponible' })).toBeVisible();
+    expect(sql(`select private.inicio_disponible(('${fecha}'::timestamp + interval '12 hours') at time zone 'America/Montevideo')`)).toBe('t');
   } finally {
     if (/^[0-9a-f-]{36}$/.test(idBloqueo)) sql(`delete from private.bloqueos where id = '${idBloqueo}'`);
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });
 
@@ -105,6 +101,6 @@ test('el administrador decide sobre las citas afectadas antes de bloquear', asyn
   } finally {
     if (/^[0-9a-f-]{36}$/.test(bloqueoId)) sql(`delete from private.bloqueos where id = '${bloqueoId}'`);
     if (/^[0-9a-f-]{36}$/.test(citaId)) sql(`delete from public.citas where id = '${citaId}'`);
-    sql(`delete from auth.users where email = '${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });

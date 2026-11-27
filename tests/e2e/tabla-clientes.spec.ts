@@ -50,6 +50,6 @@ test('muestra los datos en tabla ordenada por nombre y permite ver las citas', a
     await expect(page.getByRole('heading', { name: 'Ana Zárate' })).toBeVisible();
     await expect(page.getByRole('link', { name: '099111222' })).toHaveAttribute('href', 'https://wa.me/59899111222');
   } finally {
-    sql(`delete from auth.users where id in ('${primero}', '${segundo}', '${tercero}', '${cuarto}') or email = '${admin}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${admin}'); delete from auth.users where id in ('${primero}', '${segundo}', '${tercero}', '${cuarto}') or email = '${admin}'`);
   }
 });

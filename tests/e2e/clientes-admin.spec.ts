@@ -95,7 +95,7 @@ test('solo el administrador consulta datos e historial completo de clientes', as
   } finally {
     await contextoCliente.close();
     sql(`delete from public.citas where cliente_id in ('${clienteId}', '${vacioId}');
-      delete from auth.users where id in ('${clienteId}', '${vacioId}') or email in ('${adminEmail}', '${usuarioEmail}')
+      update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${adminEmail}'); delete from auth.users where id in ('${clienteId}', '${vacioId}') or email in ('${adminEmail}', '${usuarioEmail}')
         or email like 'story13-bulk-${sufijo}-%@example.test'`);
   }
 });

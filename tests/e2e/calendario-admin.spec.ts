@@ -94,6 +94,6 @@ test('muestra el mes y las reservas de un día en orden de hora', async ({ page 
     await expect(page.getByRole('status').filter({ hasText: 'Solicitud rechazada.' })).toBeVisible();
     expect(sql(`select count(*) from public.citas where cliente_id=(select id from auth.users where email='${email}') and estado='rechazada'`)).toBe('1');
   } finally {
-    sql(`delete from public.citas where cliente_id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
+    sql(`delete from public.citas where cliente_id=(select id from auth.users where email='${email}'); update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });

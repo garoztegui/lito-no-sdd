@@ -29,7 +29,7 @@ test('el administrador consulta la agenda y un cliente no puede acceder', async 
     const perfilRoute = /\/rest\/v1\/perfiles(?:\?|$)/;
     await page.route(perfilRoute, route => route.fulfill({ status: 400, body: '{}' }));
     await page.reload();
-    await expect(page.getByText('No se pudo comprobar el acceso a reservas.')).toBeVisible();
+    await expect(page.getByText('No se pudieron comprobar tus datos.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Solicitar una cita' })).toHaveCount(0);
     await page.unroute(perfilRoute);
     await page.getByRole('button', { name: 'Reintentar' }).click();

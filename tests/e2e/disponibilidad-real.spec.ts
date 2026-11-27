@@ -39,7 +39,7 @@ test('guardar un horario semanal libre persiste y deja de ofrecerse a clientes',
     await registro.getByRole('button', { name: 'CREAR' }).click();
     await expect(registro).toBeHidden();
     sql(`update public.perfiles set es_administrador=true where id=(select id from auth.users where email='${email}')`);
-    await page.goto('/agenda-admin');
+    await page.goto('/agenda-admin?seccion=disponibilidad');
     const control = page.getByRole('group', { name: nombre }).getByLabel(etiqueta);
     await expect(control).toBeChecked();
     await control.uncheck();
@@ -64,6 +64,7 @@ test('guardar un horario semanal libre persiste y deja de ofrecerse a clientes',
       await formulario.getByRole('button', { name: 'CREAR' }).click();
       await expect(formulario).toBeHidden();
       await cliente.reload();
+      await cliente.getByRole('button', { name: 'Reservar cita', exact: true }).click();
       const fecha = new Date(Date.now() + 21 * 86400000);
       fecha.setUTCHours(12, 0, 0, 0);
       while ((fecha.getUTCDay() || 7) !== dia) fecha.setUTCDate(fecha.getUTCDate() + 1);
@@ -78,7 +79,7 @@ test('guardar un horario semanal libre persiste y deja de ofrecerse a clientes',
       and not exists (select 1 from public.citas c where c.inicio>now() and c.estado in ('pendiente','confirmada','propuesta')
         and extract(isodow from timezone('America/Montevideo',c.inicio))=d.dia and extract(hour from timezone('America/Montevideo',c.inicio))=d.hora)`);
     for (const agregado of agregados) sql(`delete from private.disponibilidad_semanal where dia=${agregado.dia} and hora=${agregado.hora}`);
-    sql(`delete from auth.users where email='${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
     sql(`delete from auth.users where email='${emailCliente}'`);
   }
 });

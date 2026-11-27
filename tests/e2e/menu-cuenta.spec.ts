@@ -27,7 +27,7 @@ test('el administrador edita su cuenta y cierra sesión desde la barra', async (
     await page.getByRole('link', { name: 'Configuración' }).click();
     await expect(page.getByLabel('Email de la cuenta')).toHaveValue(email);
     await page.getByLabel('Nombre completo').fill('Admin Actualizado');
-    await page.getByLabel('Teléfono').fill('099222333');
+    await page.getByRole('region', { name: 'Configuración' }).getByLabel('Teléfono').fill('099222333');
     await page.getByLabel('Sexo').selectOption('Mujer');
     await page.getByRole('button', { name: 'Guardar datos' }).click();
     await expect(page.getByText('Datos actualizados.')).toBeVisible();
@@ -41,6 +41,6 @@ test('el administrador edita su cuenta y cierra sesión desde la barra', async (
     await expect(page.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
     await expect(otra.getByRole('form', { name: 'Iniciar sesión' })).toBeVisible();
   } finally {
-    sql(`delete from auth.users where email='${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });

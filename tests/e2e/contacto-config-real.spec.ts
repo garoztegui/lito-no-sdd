@@ -6,6 +6,8 @@ test('el administrador guarda datos que el cliente consulta en contacto y ubicac
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replaceAll('"', '');
   if (url !== 'http://127.0.0.1:57521') throw new Error('La prueba solo puede ejecutarse contra Supabase local');
   const admin = createClient(url, process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false } });
+  const { data: contactoOriginal, error: errorContacto } = await admin.from('contacto_config').select('telefono,direccion').eq('id', true).single();
+  expect(errorContacto).toBeNull();
   const usuarios: string[] = [];
   const correoAdmin = `contacto-admin-${crypto.randomUUID()}@example.test`;
   const correoCliente = `contacto-cliente-${crypto.randomUUID()}@example.test`;
@@ -56,6 +58,10 @@ test('el administrador guarda datos que el cliente consulta en contacto y ubicac
     await expect(cliente.locator('iframe[title="Mapa de ubicación de LITO"]')).toHaveAttribute('src', /Calle\+Ficticia\+123/);
   } finally {
     await contextoCliente.close();
+    if (contactoOriginal) {
+      const { error } = await admin.from('contacto_config').update(contactoOriginal).eq('id', true);
+      expect(error).toBeNull();
+    }
     await admin.from('cuentas_bancarias').delete().eq('numero', numeroPrueba);
     if (usuarios[0] && /^[0-9a-f-]{36}$/.test(usuarios[0])) execFileSync('docker', ['exec','supabase_db_litov2','psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-c', `update public.perfiles set es_administrador=false where id='${usuarios[0]}'`]);
     for (const usuario of usuarios) await admin.auth.admin.deleteUser(usuario);

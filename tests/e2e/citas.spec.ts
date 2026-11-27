@@ -33,6 +33,7 @@ test('un cliente solicita un turno disponible', async ({ page }) => {
   await registro.getByRole('button', { name: 'CREAR' }).click();
   await expect(registro).toBeHidden();
   await page.reload();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
 
   const fecha = new Date(Date.now() + (35 + Math.floor(Math.random() * 25)) * 86400000);
   while ([0, 6].includes(fecha.getUTCDay())) fecha.setUTCDate(fecha.getUTCDate() + 1);
@@ -60,6 +61,7 @@ test('si falla la consulta no se muestran horarios como disponibles', async ({ p
   await expect(registro).toBeHidden();
   await page.route('**/rest/v1/rpc/horarios_ocupados', route => route.fulfill({ status: 503, body: '{}' }));
   await page.reload();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   const fecha = new Date(Date.now() + 40 * 86400000);
   while ([0, 6].includes(fecha.getUTCDay())) fecha.setUTCDate(fecha.getUTCDate() + 1);
   await page.getByLabel('Fecha').fill(fecha.toISOString().slice(0, 10));
@@ -81,6 +83,7 @@ test('un horario tomado mientras otro cliente lo solicita muestra un error', asy
     await registro.getByRole('button', { name: 'CREAR' }).click();
     await expect(registro).toBeHidden();
     await page.reload();
+    await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   }
   const fecha = fechaConTurnoDisponible();
   for (const page of paginas) {
@@ -111,6 +114,7 @@ test('si la solicitud no responde se informa y termina la espera', async ({ page
   await registro.getByRole('button', { name: 'CREAR' }).click();
   await expect(registro).toBeHidden();
   await page.reload();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   await page.getByLabel('Fecha').fill(fechaConTurnoDisponible());
   await page.getByLabel('Servicio').selectOption({ label: 'Espalda' });
   await page.getByRole('button', { name: /Disponible$/ }).first().click();
@@ -147,7 +151,9 @@ test('si la consulta de horarios no responde permite reintentar', async ({ page 
   await page.clock.install();
   const llamada = page.waitForRequest('**/rest/v1/rpc/horarios_ocupados');
   await page.reload();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   await llamada;
+  await expect(page.getByText('Consultando horarios...')).toBeVisible();
   try {
     await page.clock.fastForward(16000);
     await expect(page.getByRole('region', { name: 'Solicitar una cita' }).getByRole('button', { name: 'Reintentar' })).toBeVisible();

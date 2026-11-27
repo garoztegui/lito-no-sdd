@@ -63,7 +63,8 @@ test('el cliente consulta las tres secciones desde el menú en celular', async (
     await page.getByRole('link', { name: 'Medios de pago y contacto' }).click();
     await expect(page.getByText('094 553 211')).toBeVisible();
     await expect(page.getByRole('link', { name: '094 553 211' })).toHaveAttribute('href', 'https://wa.me/59894553211');
-    await expect(page.getByText('BANCO REPUBLICA $ 00040248300001')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'BANCO REPUBLICA' })).toBeVisible();
+    await expect(page.getByText('Número: 00040248300001')).toBeVisible();
     await expect(page.getByText('José Luis')).toBeVisible();
     await expect(page.getByText('EFECTIVO')).toBeVisible();
     const telefono = await page.getByText('094 553 211').boundingBox();
@@ -73,7 +74,7 @@ test('el cliente consulta las tres secciones desde el menú en celular', async (
     await page.getByRole('button', { name: 'Volver al inicio' }).click();
     await expect(page.getByRole('button', { name: 'Mis citas', exact: true })).toBeVisible();
   } finally {
-    sql(`delete from auth.users where email='${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });
 
@@ -98,7 +99,7 @@ test('el administrador ve la ayuda pero no las opciones exclusivas de clientes',
       await expect(page).toHaveURL('/');
     }
   } finally {
-    sql(`delete from auth.users where email='${email}'`);
+    sql(`update public.perfiles set es_administrador=false where id=(select id from auth.users where email='${email}'); delete from auth.users where email='${email}'`);
   }
 });
 

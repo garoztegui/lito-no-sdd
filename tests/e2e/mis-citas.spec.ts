@@ -37,6 +37,7 @@ test('ordena primero las citas futuras próximas y después las pasadas reciente
 test('un cliente sin citas ve el mensaje de lista vacía', async ({ page }) => {
   await ingresarComoCliente(page);
   await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Mis citas' }).getByText('Todavía no tenés citas.')).toBeVisible();
 });
 
@@ -47,6 +48,7 @@ test('se muestran citas pasadas y futuras con fecha, hora y estado en Montevideo
     { id: '2', inicio: '2024-01-08T21:00:00Z', servicio: 'Cuerpo entero', estado: 'pendiente' },
   ] }));
   await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await expect(citas.getByRole('listitem')).toHaveCount(2);
   for (const texto of ['Espalda', '7 de enero de 2028', '10:00', 'Pendiente']) await expect(citas.getByRole('listitem').nth(0)).toContainText(texto);
@@ -66,6 +68,7 @@ test('se muestra el historial completo cuando ocupa varias páginas', async ({ p
     return route.fulfill({ json: historial.slice(desde, desde + cantidad) });
   });
   await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await expect(citas.getByRole('listitem')).toHaveCount(501);
   await expect(citas.getByText('Última cita')).toBeVisible();
@@ -79,6 +82,7 @@ test('un error al consultar permite reintentar sin mostrar una lista vacía', as
     return route.continue();
   });
   await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await expect(citas.getByText('No se pudieron cargar tus citas.')).toBeVisible();
   await expect(citas.getByText('Todavía no tenés citas.')).toHaveCount(0);
@@ -91,6 +95,7 @@ test('un error al consultar permite reintentar sin mostrar una lista vacía', as
 test('una solicitud nueva aparece en Mis citas sin recargar', async ({ page }) => {
   await ingresarComoCliente(page);
   await page.reload();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   const fecha = new Date(Date.now() + (35 + Math.floor(Math.random() * 25)) * 86400000);
   while ([0, 6].includes(fecha.getUTCDay())) fecha.setUTCDate(fecha.getUTCDate() + 1);
   await page.getByLabel('Fecha').fill(fecha.toISOString().slice(0, 10));
@@ -98,6 +103,8 @@ test('una solicitud nueva aparece en Mis citas sin recargar', async ({ page }) =
   await page.getByRole('button', { name: /Disponible$/ }).first().click();
   await page.getByRole('button', { name: 'Solicitar cita' }).click();
   await expect(page.getByText('Solicitud enviada. Tu cita está pendiente.')).toBeVisible();
+  await page.getByRole('button', { name: 'Volver al menú' }).click();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await expect(citas.getByRole('listitem')).toHaveCount(1);
   await expect(citas.getByRole('listitem').first()).toContainText('Espalda');
@@ -117,6 +124,7 @@ test('una consulta sin respuesta muestra carga y permite reintentar', async ({ p
   await page.clock.install();
   const solicitud = page.waitForRequest(request => patron.test(request.url()) && request.method() === 'GET');
   await page.reload();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   await solicitud;
   const citas = page.getByRole('region', { name: 'Mis citas' });
   try {
@@ -133,6 +141,7 @@ test('el cliente cancela su solicitud y el horario vuelve a estar disponible', a
   await page.setViewportSize({ width: 390, height: 844 });
   await ingresarComoCliente(page);
   await page.reload();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   await page.getByLabel('Fecha').fill(fechaConTurnoDisponible());
   await page.getByLabel('Servicio').selectOption({ label: 'Espalda' });
   const horario = page.getByRole('button', { name: /Disponible$/ }).first();
@@ -142,6 +151,8 @@ test('el cliente cancela su solicitud y el horario vuelve a estar disponible', a
   await page.getByRole('button', { name: 'Solicitar cita' }).click();
   await expect(page.getByText('Solicitud enviada. Tu cita está pendiente.')).toBeVisible();
   await expect(page.getByRole('button', { name: `${hora} Ocupado` })).toBeDisabled();
+  await page.getByRole('button', { name: 'Volver al menú' }).click();
+  await page.getByRole('button', { name: 'Mis citas', exact: true }).click();
   const citas = page.getByRole('region', { name: 'Mis citas' });
   await citas.getByRole('button', { name: 'Cancelar cita' }).focus();
   await page.keyboard.press('Enter');
@@ -152,6 +163,8 @@ test('el cliente cancela su solicitud y el horario vuelve a estar disponible', a
   await confirmacion.getByRole('button', { name: 'Sí', exact: true }).click();
   await expect(citas.getByRole('status')).toHaveText('La cita quedó cancelada.');
   await expect(citas.getByRole('listitem')).toContainText('Cancelada');
+  await page.getByRole('button', { name: 'Volver al menú' }).click();
+  await page.getByRole('button', { name: 'Reservar cita', exact: true }).click();
   await expect(page.getByRole('button', { name: `${hora} Disponible` })).toBeEnabled();
 });
 
