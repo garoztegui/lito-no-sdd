@@ -5,12 +5,20 @@ import { useEffect, useState } from 'react';
 import Agenda from './agenda';
 import MisCitas from './mis-citas';
 import MenuAdmin from './menu-admin';
+import JuegoLito from './juego-lito';
 import { conLimite } from './limite';
 
 export default function AgendaCliente({ onSolicitudFinalizada, versionCitas }: { onSolicitudFinalizada: () => void; versionCitas: number }) {
   const [acceso, setAcceso] = useState<'cargando' | 'cliente' | 'administrador' | 'error'>('cargando');
   const [version, setVersion] = useState(0);
-  const [seccion, setSeccion] = useState<'menu' | 'citas' | 'reserva'>('menu');
+  const [seccion, setSeccion] = useState<'menu' | 'citas' | 'reserva' | 'juego'>('menu');
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('juego') === '1') {
+      setSeccion('juego');
+      window.history.replaceState(null, '', '/');
+    }
+  }, []);
 
   useEffect(() => {
     let vigente = true;
@@ -33,10 +41,12 @@ export default function AgendaCliente({ onSolicitudFinalizada, versionCitas }: {
 
   if (acceso === 'cargando') return <p>Comprobando acceso a reservas...</p>;
   if (acceso === 'error') return <section><p role="alert">No se pudo comprobar el acceso a reservas.</p><button type="button" onClick={() => setVersion(valor => valor + 1)}>Reintentar</button></section>;
-  if (acceso === 'administrador') return <MenuAdmin />;
+  if (seccion === 'juego') return <><button className="volver-menu" type="button" onClick={() => setSeccion('menu')}>Volver al menú</button><JuegoLito /></>;
+  if (acceso === 'administrador') return <MenuAdmin onJugar={() => setSeccion('juego')} />;
   if (seccion === 'menu') return <nav className="menu-cliente" aria-label="Opciones de cliente">
     <button type="button" onClick={() => setSeccion('citas')}>Mis citas</button>
     <button type="button" onClick={() => setSeccion('reserva')}>Reservar cita</button>
+    <button type="button" onClick={() => setSeccion('juego')}>Jugar a ser Lito</button>
   </nav>;
   return <><button className="volver-menu" type="button" onClick={() => setSeccion('menu')}>Volver al menú</button>
     {seccion === 'citas' ? <MisCitas version={versionCitas} onCancelacion={onSolicitudFinalizada} /> : <Agenda onSolicitudFinalizada={onSolicitudFinalizada} versionCitas={versionCitas} />}

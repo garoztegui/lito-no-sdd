@@ -117,7 +117,7 @@ export default function Home() {
 
   return (
     <main className="container">
-      <header className={ingresado ? 'introduccion introduccion-cuenta' : 'introduccion'}>{!ingresado && <p className="marca">BIENVENIDO A LITO</p>}<h1>{ingresado ? 'LITO MASAJES & FISIOTERAPIA' : <>Tu bienestar<br />comienza acá</>}<span className="punto-titulo">.</span></h1><p>{ingresado ? 'Elegí una opción para continuar.' : 'Masajes y fisioterapia para acompañar tu bienestar. Creá tu cuenta o ingresá para reservar una cita.'}</p></header>
+      <header className={ingresado ? 'introduccion introduccion-cuenta' : 'introduccion'}>{!ingresado && <p className="marca">BIENVENIDO A LITO</p>}<h1>{ingresado ? 'LITO MASAJES & FISIOTERAPIA' : <>Tu bienestar<br />comienza acá</>}<span className="punto-titulo">.</span></h1>{!ingresado && <p>Masajes y fisioterapia para acompañar tu bienestar. Creá tu cuenta o ingresá para reservar una cita.</p>}</header>
       {ingresado ? <AgendaCliente key={emailUsuario} versionCitas={versionCitas} onSolicitudFinalizada={() => setVersionCitas(valor => valor + 1)} /> : <div className="formularios">
       <form aria-label="Iniciar sesión" onSubmit={ingresar}>
         <h2>Iniciar sesión</h2>
